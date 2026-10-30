@@ -984,7 +984,7 @@ func (s *OpenAIGatewayService) handleOpenAIImagesNonStreamingResponse(
 	}
 	c.Data(resp.StatusCode, contentType, body)
 
-	usage, _ := extractOpenAIUsageFromJSONBytes(body)
+	usage, _ := openAIImagesUsageFromJSONBytes(body)
 	return usage, extractOpenAIImageCountFromJSONBytes(body), collectOpenAIResponseImageOutputSizesFromJSONBytes(body), nil
 }
 
@@ -1048,9 +1048,6 @@ func (s *OpenAIGatewayService) handleOpenAIImagesStreamingResponse(
 		imageCounter.AddSSEData(dataBytes)
 		if direct == nil || string(dataBytes) == "[DONE]" {
 			return
-		}
-		if directUsage, ok := codexDirectImagesUsage(dataBytes); ok {
-			mergeOpenAIUsageNonZero(&usage, directUsage)
 		}
 		if observer := upstreamResponseModelObserverFromContext(c); observer != nil {
 			observer.Observe(gjson.GetBytes(dataBytes, "model").String(), strings.HasSuffix(gjson.GetBytes(dataBytes, "type").String(), ".completed"))
@@ -1303,25 +1300,8 @@ func extractOpenAIImagesBillableCountFromJSONBytes(body []byte) int {
 }
 
 func mergeOpenAIUsage(dst *OpenAIUsage, body []byte) {
-	if dst == nil {
-		return
-	}
-	if parsed, ok := extractOpenAIUsageFromJSONBytes(body); ok {
-		if parsed.InputTokens > 0 {
-			dst.InputTokens = parsed.InputTokens
-		}
-		if parsed.OutputTokens > 0 {
-			dst.OutputTokens = parsed.OutputTokens
-		}
-		if parsed.CacheReadInputTokens > 0 {
-			dst.CacheReadInputTokens = parsed.CacheReadInputTokens
-		}
-		if parsed.ImageInputTokens > 0 {
-			dst.ImageInputTokens = parsed.ImageInputTokens
-		}
-		if parsed.ImageOutputTokens > 0 {
-			dst.ImageOutputTokens = parsed.ImageOutputTokens
-		}
+	if parsed, ok := openAIImagesUsageFromJSONBytes(body); ok {
+		mergeOpenAIUsageNonZero(dst, parsed)
 	}
 }
 

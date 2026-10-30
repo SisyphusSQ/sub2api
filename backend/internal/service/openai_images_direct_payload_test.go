@@ -66,7 +66,7 @@ func TestCodexDirectImagesPricingAndUsage(t *testing.T) {
 	var catalog map[string]LiteLLMModelPricing
 	require.NoError(t, json.Unmarshal(body, &catalog))
 	require.Equal(t, 2e-6, catalog["gpt-image-2.5-flare"].CacheReadInputImageTokenCost)
-	usage, ok := codexDirectImagesUsage([]byte(`{"usage":{"input_tokens":100,"input_tokens_details":{"text_tokens":20,"image_tokens":80,"cached_tokens":50,"cached_tokens_details":{"text_tokens":10,"image_tokens":40}},"output_tokens":200}}`))
+	usage, ok := openAIImagesUsageFromJSONBytes([]byte(`{"usage":{"input_tokens":100,"input_tokens_details":{"text_tokens":20,"image_tokens":80,"cached_tokens":50,"cached_tokens_details":{"text_tokens":10,"image_tokens":40}},"output_tokens":200}}`))
 	require.True(t, ok)
 	require.Equal(t, 40, usage.ImageCacheReadTokens)
 	require.Equal(t, 200, usage.ImageOutputTokens)
@@ -77,7 +77,7 @@ func TestCodexDirectImagesPricingAndUsage(t *testing.T) {
 	require.InDelta(t, 40*8e-6, cost.ImageInputCost, 1e-12)
 	require.InDelta(t, 10*1.25e-6+40*2e-6, cost.CacheReadCost, 1e-12)
 	require.InDelta(t, 200*30e-6, cost.ImageOutputCost, 1e-12)
-	unknown, _ := codexDirectImagesUsage([]byte(`{"usage":{"input_tokens":100,"input_tokens_details":{"image_tokens":80,"cached_tokens":50},"output_tokens":200}}`))
+	unknown, _ := openAIImagesUsageFromJSONBytes([]byte(`{"usage":{"input_tokens":100,"input_tokens_details":{"image_tokens":80,"cached_tokens":50},"output_tokens":200}}`))
 	require.Zero(t, unknown.ImageCacheReadTokens, "不能根据总缓存量推测图片缓存占比")
 }
 
