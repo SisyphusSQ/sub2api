@@ -5,6 +5,6 @@
 | 需求 | 状态 | 实现与验证 | 移除条件 |
 | --- | --- | --- | --- |
 | [TOO-674 生图计费](https://linear.app/sisyphus-sq/issue/TOO-674) | 待实现 | 开发前复核上游，提交和验证待补 | 上游正式版等价修复并通过相关回归 |
-| [TOO-675 Decisions](https://linear.app/sisyphus-sq/issue/TOO-675) | 代码评审与隔离环境真实验收通过 | 开发分支 `suqing/fix/openai-decisions`，集成分支 `suqing/stable`；提交与合入回执见卡片交付评论；两分组 12 次真实调用，缓存读写、账本/余额、并发去重及失败取消均已验收，见[接入说明](../OPENAI_DECISIONS.md)和[验证记录](too-675-verification.md)；未部署；PR #7922 仅作参考 | 上游正式支持并通过实际调用及记账回归 |
+| [TOO-675 Decisions](https://linear.app/sisyphus-sq/issue/TOO-675) | 评审验收通过，已合入 `suqing/stable`，未部署 | 源码 `dcd7b43e7`；开发分支 `suqing/fix/openai-decisions`，快进集成；远端回执见卡片交付评论；两分组 12 次真实调用，缓存读写、账本/余额、并发去重及失败取消均已验收，见[接入说明](../OPENAI_DECISIONS.md)和[验证记录](too-675-verification.md)；PR #7922 仅作参考 | 上游正式支持并通过实际调用及记账回归 |
 
 新增补丁记录问题依据、影响模块、提交、验证入口/结果、上游关联及移除条件。不能把需求卡视作已实现。
