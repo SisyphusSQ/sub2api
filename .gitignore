@@ -111,6 +111,8 @@ backend/data/
 # ===================
 backend/config.yaml
 deploy/config.yaml
+# 从 sqmc03 迁移的私有测试基准配置、数据及凭据
+/deploy/test-baseline/
 backend/.installed
 
 # ===================
@@ -137,6 +139,7 @@ docs/*
 !docs/local/
 docs/local/*
 !docs/local/too-675-verification.md
+!docs/local/too-674-verification.md
 !docs/admin-api-keys.md
 !docs/PAYMENT.md
 !docs/PAYMENT_CN.md

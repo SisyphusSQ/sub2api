@@ -644,8 +644,18 @@ func (s *OpenAIGatewayService) calculateOpenAIRecordUsageCost(
 		if imageCountBillingApplies(apiKey, result.ImageEndpoint) {
 			return s.calculateOpenAIImageCost(ctx, billingModel, apiKey, result, imageMultiplier), nil
 		}
-		if resolved := s.resolveOpenAIChannelPricing(ctx, billingModel, apiKey); resolved == nil || resolved.Mode != BillingModeToken {
-			return s.calculateOpenAIImageCost(ctx, billingModel, apiKey, result, imageMultiplier), nil
+		if resolved := s.resolveOpenAIChannelPricing(ctx, billingModel, apiKey); resolved != nil {
+			if resolved.Mode != BillingModeToken {
+				return s.calculateOpenAIImageCost(ctx, billingModel, apiKey, result, imageMultiplier), nil
+			}
+		} else {
+			// 默认 token 价表同样可用于生图，不能仅因没有渠道覆盖就套用固定图片价。
+			// 保留已有尺寸覆盖价及缺少用量/价表时的图片兜底契约。
+			apiKey = s.apiKeyWithFreshGroupMediaPricing(ctx, apiKey)
+			if apiKeyHasConfiguredImagePrice(apiKey, NormalizeImageBillingTierOrDefault(result.ImageSize)) ||
+				!s.hasOpenAIImageTokenPricing(billingModels, tokens) {
+				return s.calculateOpenAIImageCost(ctx, billingModel, apiKey, result, imageMultiplier), nil
+			}
 		}
 	}
 
@@ -775,13 +785,31 @@ func (s *OpenAIGatewayService) calculateOpenAIRecordUsageTokenCost(
 			DisableModelLongContextPricing: modelLongContextExempt,
 		})
 	}
-	return s.billingService.calculateCostWithServiceTierPolicy(
+	cost, err := s.billingService.calculateCostWithServiceTierPolicy(
 		billingModel,
 		tokens,
 		multiplier,
 		serviceTier,
 		(longContextBillingGate == nil || *longContextBillingGate) && !modelLongContextExempt,
 	)
+	if err == nil {
+		// 旧 token 入口未标记模式，图片账单因此会被误标为按张并记录图片倍率。
+		cost.BillingMode = string(BillingModeToken)
+	}
+	return cost, err
+}
+
+func (s *OpenAIGatewayService) hasOpenAIImageTokenPricing(billingModels []string, tokens UsageTokens) bool {
+	if tokens.InputTokens <= 0 && tokens.OutputTokens <= 0 &&
+		tokens.CacheReadTokens <= 0 && tokens.CacheCreationTokens <= 0 && tokens.ImageOutputTokens <= 0 {
+		return false
+	}
+	for _, model := range billingModels {
+		if _, err := s.billingService.GetModelPricing(model); err == nil {
+			return true
+		}
+	}
+	return false
 }
 
 func (s *OpenAIGatewayService) calculateOpenAIImageCost(

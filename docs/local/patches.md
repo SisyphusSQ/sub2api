@@ -4,7 +4,7 @@
 
 | 需求 | 状态 | 实现与验证 | 移除条件 |
 | --- | --- | --- | --- |
-| [TOO-674 生图计费](https://linear.app/sisyphus-sq/issue/TOO-674) | 待实现 | 开发前复核上游，提交和验证待补 | 上游正式版等价修复并通过相关回归 |
+| [TOO-674 生图计费](https://linear.app/sisyphus-sq/issue/TOO-674) | 开发、隔离网关验证及用户评审通过；未部署 | 源码 `89b3919e6`，开发分支 `suqing/fix/image-token-billing`，基线 `84d10c31c`；PR 合并与默认分支同步回执见卡片交付评论；默认 token 选择、原生图片用量解析与模式标记修复；59 个后端测试包、最终定向 race/源码静态检查及4次真实网关调用，详见[验证记录](too-674-verification.md)；上游 `d851a3847` 尚无等价修复 | 上游正式版等价修复默认 token 选择与图片用量归类，并通过相同定价优先级及入账回归 |
 | [TOO-675 Decisions](https://linear.app/sisyphus-sq/issue/TOO-675) | 评审验收通过，已合入 `suqing/stable`，未部署 | 源码 `dcd7b43e7`；开发分支 `suqing/fix/openai-decisions`，快进集成；远端回执见卡片交付评论；两分组 12 次真实调用，缓存读写、账本/余额、并发去重及失败取消均已验收，见[接入说明](../OPENAI_DECISIONS.md)和[验证记录](too-675-verification.md)；PR #7922 仅作参考 | 上游正式支持并通过实际调用及记账回归 |
 
 新增补丁记录问题依据、影响模块、提交、验证入口/结果、上游关联及移除条件。不能把需求卡视作已实现。

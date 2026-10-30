@@ -183,13 +183,16 @@ func isOpenAIImagesMainModelError(status int, body []byte) bool {
 
 // Images 端点只输出图片；未提供输出分类时，output_tokens 全部是图片 token。
 // 缓存图片数量只采信明确明细，不根据总缓存量猜测图文占比。
-func codexDirectImagesUsage(body []byte) (OpenAIUsage, bool) {
+func openAIImagesUsageFromJSONBytes(body []byte) (OpenAIUsage, bool) {
 	value := gjson.GetBytes(body, "usage")
+	if !value.Exists() {
+		return extractOpenAIUsageFromJSONBytes(body)
+	}
 	usage, ok := openAIUsageFromGJSON(value)
 	if !ok {
 		return usage, false
 	}
-	if !value.Get("output_tokens_details.image_tokens").Exists() {
+	if !value.Get("output_tokens_details.image_tokens").Exists() && !value.Get("completion_tokens_details.image_tokens").Exists() {
 		usage.ImageOutputTokens = usage.OutputTokens
 	}
 	cached := value.Get("input_tokens_details.cached_tokens_details")
@@ -216,7 +219,7 @@ func (s *OpenAIGatewayService) handleCodexDirectImagesNonStreamingResponse(resp 
 	if err != nil {
 		return OpenAIUsage{}, 0, nil, err
 	}
-	usage, _ := codexDirectImagesUsage(body)
+	usage, _ := openAIImagesUsageFromJSONBytes(body)
 	if observer := upstreamResponseModelObserverFromContext(c); observer != nil {
 		observer.Observe(gjson.GetBytes(body, "model").String(), true)
 		for _, result := range results {
