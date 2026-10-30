@@ -6,6 +6,7 @@
 - 上游：https://github.com/Wei-Shaw/sub2api
 - Linear 项目：https://linear.app/sisyphus-sq/project/sub2api-轻量维护-ceaaa16aa281
 - 本目录索引：[补丁清单](patches.md)、[版本记录](releases.md)。完整功能需求分别由 TOO-674、TOO-675、TOO-676 承载，本文维护公共操作规则。
+- Decisions 补丁接入与异常结算规则：[OpenAI Decisions](../OPENAI_DECISIONS.md)；[开发验证记录](too-675-verification.md)。
 - 保留上游前端、PostgreSQL、Redis；不开展 MySQL 迁移或前端重写。
 
 ## 机器与目录

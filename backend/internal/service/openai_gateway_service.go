@@ -257,6 +257,8 @@ type OpenAIForwardResult struct {
 	// UpstreamEndpoint is the actual upstream API path used for this request.
 	// It avoids guessing when one downstream protocol can use multiple upstream endpoints.
 	UpstreamEndpoint string
+	// DecisionsPricing 为转发前固定的端点定价；异步记账不重新解析聊天价卡。
+	DecisionsPricing *ResolvedPricing
 	// ServiceTier is the final tier sent upstream after policy rewriting.
 	// The upstream response declaration remains separate above and is reconciled
 	// at usage-recording time, where the credential protocol is available.

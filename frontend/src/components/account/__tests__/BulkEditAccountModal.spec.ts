@@ -492,7 +492,7 @@ describe('BulkEditAccountModal', () => {
     })
   })
 
-  it('端点能力默认值提交 null，表示恢复两个默认端点', async () => {
+  it('端点能力默认值提交 null，表示恢复默认端点', async () => {
     const wrapper = mountModal({
       selectedPlatforms: ['openai'],
       selectedTypes: ['apikey']
@@ -541,6 +541,7 @@ describe('BulkEditAccountModal', () => {
     })
 
     await wrapper.get('#bulk-edit-openai-endpoint-capabilities-enabled').setValue(true)
+    await wrapper.get('[data-testid="bulk-edit-openai-endpoint-capability-decisions"]').setValue(false)
     await wrapper.get('#bulk-edit-openai-responses-mode-enabled').setValue(true)
     await wrapper.get('[data-testid="bulk-edit-openai-responses-mode-select"]').setValue('force_chat_completions')
     await wrapper.get('[data-testid="bulk-edit-openai-endpoint-capability-chat_completions"]').setValue(false)
@@ -560,6 +561,7 @@ describe('BulkEditAccountModal', () => {
   it('persists Seedance in a two-capability bulk update', async () => {
     const wrapper = mountModal({ selectedPlatforms: ['openai'], selectedTypes: ['apikey'] })
     await wrapper.get('#bulk-edit-openai-endpoint-capabilities-enabled').setValue(true)
+    await wrapper.get('[data-testid="bulk-edit-openai-endpoint-capability-decisions"]').setValue(false)
     await wrapper.get('[data-testid="bulk-edit-openai-endpoint-capability-embeddings"]').setValue(false)
     await wrapper.get('[data-testid="bulk-edit-openai-endpoint-capability-seedance"]').setValue(true)
     await wrapper.get('#bulk-edit-account-form').trigger('submit.prevent')
@@ -616,6 +618,7 @@ describe('BulkEditAccountModal', () => {
       selectedTypes: ['apikey']
     })
     await wrapper.get('#bulk-edit-openai-endpoint-capabilities-enabled').setValue(true)
+    await wrapper.get('[data-testid="bulk-edit-openai-endpoint-capability-decisions"]').setValue(false)
     await wrapper.get('[data-testid="bulk-edit-openai-endpoint-capability-chat_completions"]').setValue(false)
     await wrapper.get('[data-testid="bulk-edit-openai-endpoint-capability-embeddings"]').setValue(false)
 

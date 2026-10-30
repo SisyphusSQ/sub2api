@@ -9,6 +9,8 @@ import (
 	"sort"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/Wei-Shaw/sub2api/internal/pkg/openai_decisions"
 )
 
 var (
@@ -84,6 +86,13 @@ func extractProtocolSegments(protocol string, document any) []promptSegment {
 	root, _ := document.(map[string]any)
 	protocol = strings.ToLower(strings.TrimSpace(protocol))
 	switch protocol {
+	case "openai_decisions":
+		body, err := json.Marshal(root)
+		if err != nil {
+			return nil
+		}
+		texts, _ := openai_decisions.ExtractEvidence(body)
+		return userPromptSegments(texts)
 	case "openai_chat_completions", "openai_chat", "chat_completions":
 		return extractChatLikeSegments(root)
 	case "anthropic_messages", "claude_messages", "messages":

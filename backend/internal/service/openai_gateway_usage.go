@@ -254,6 +254,9 @@ func (s *OpenAIGatewayService) RecordUsage(ctx context.Context, input *OpenAIRec
 		pricingAt,
 	)
 	if err != nil {
+		if result.UpstreamEndpoint == "/v1/decisions" {
+			return fmt.Errorf("decisions usage could not be priced: %w", err)
+		}
 		if !isUsagePricingUnavailableError(err) {
 			return err
 		}
@@ -278,7 +281,7 @@ func (s *OpenAIGatewayService) RecordUsage(ctx context.Context, input *OpenAIRec
 		result.UpstreamResponseModel,
 		result.UpstreamResponseModelConflict,
 		result.ImageCount > 0 || result.VideoCount > 0 || result.WebSearchCalls > 0 ||
-			result.AudioUsage != nil || result.SearchCount > 0,
+			result.AudioUsage != nil || result.SearchCount > 0 || result.DecisionsPricing != nil,
 	); responseModel != "" && !strings.EqualFold(responseModel, baselineBillingModel) {
 		if identified, responseChannelPriced := s.hasIdentifiedOpenAIResponsePricing(ctx, responseModel, apiKey); identified {
 			responseModels := s.filterCNProviderBillingModelCandidates(ctx, account, apiKey, usageBillingModelCandidates(responseModel))
@@ -522,6 +525,9 @@ func (s *OpenAIGatewayService) RecordUsage(ctx context.Context, input *OpenAIRec
 	}, s.billingDeps(), s.usageBillingRepo)
 
 	if billingErr != nil {
+		if result.DecisionsPricing != nil {
+			return billingErr
+		}
 		usageLog.ActualCost = 0
 		writeUsageLogBestEffort(ctx, s.usageLogRepo, usageLog, "service.openai_gateway")
 		return billingErr
@@ -590,6 +596,20 @@ func (s *OpenAIGatewayService) calculateOpenAIRecordUsageCost(
 	modelLongContextExempt bool,
 	pricingAt time.Time,
 ) (*CostBreakdown, error) {
+	if result != nil && result.UpstreamEndpoint == "/v1/decisions" {
+		if result.DecisionsPricing == nil {
+			return nil, fmt.Errorf("missing Decisions pricing snapshot: %w", ErrModelPricingUnavailable)
+		}
+		resolver := s.resolver
+		if resolver == nil {
+			resolver = NewModelPricingResolver(nil, s.billingService)
+		}
+		return s.billingService.CalculateCostUnified(CostInput{
+			Ctx: ctx, Model: firstUsageBillingModel(billingModels), Tokens: tokens, RequestCount: 1,
+			RateMultiplier: multiplier, PricingAt: pricingAt, Resolved: result.DecisionsPricing, Resolver: resolver,
+			LongContextBillingEnabled: longContextBillingGate, DisableModelLongContextPricing: modelLongContextExempt,
+		})
+	}
 	billingModel := firstUsageBillingModel(billingModels)
 	if result != nil && result.WebSearchCalls > 0 {
 		// Codex alpha/search 网页搜索按次计费：上游不返回 usage/token 字段，单价只取

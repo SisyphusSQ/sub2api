@@ -133,6 +133,10 @@ deploy/docker-compose.override.yml
 .gocache/
 vite.config.js
 docs/*
+!docs/OPENAI_DECISIONS.md
+!docs/local/
+docs/local/*
+!docs/local/too-675-verification.md
 !docs/admin-api-keys.md
 !docs/PAYMENT.md
 !docs/PAYMENT_CN.md

@@ -6,6 +6,8 @@ import (
 	"math/big"
 	"strings"
 
+	"github.com/Wei-Shaw/sub2api/internal/pkg/openai_decisions"
+
 	"github.com/tidwall/gjson"
 )
 
@@ -35,6 +37,8 @@ func extractContentModerationInput(protocol string, body []byte, filterReminders
 	var parts []string
 	var images []string
 	switch protocol {
+	case ContentModerationProtocolOpenAIDecisions:
+		parts, images = openai_decisions.ExtractEvidence(body)
 	case ContentModerationProtocolAnthropicMessages:
 		collector.collectLastAnthropicUserMessage(gjson.GetBytes(body, "messages"), &parts, &images)
 	case ContentModerationProtocolOpenAIChat:

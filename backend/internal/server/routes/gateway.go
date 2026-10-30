@@ -237,6 +237,13 @@ func RegisterGatewayRoutes(
 			}
 			h.Gateway.ChatCompletions(c)
 		})
+		gateway.POST("/decisions", func(c *gin.Context) {
+			if !isOpenAIOnlyEndpointGatewayPlatform(c) {
+				c.JSON(http.StatusNotFound, gin.H{"error": gin.H{"type": "not_found_error", "message": "Decisions API is not supported for this platform"}})
+				return
+			}
+			h.OpenAIGateway.Decisions(c)
+		})
 		gateway.POST("/embeddings", textBodyLimit, func(c *gin.Context) {
 			if !isOpenAIOnlyEndpointGatewayPlatform(c) {
 				service.MarkOpsClientBusinessLimited(c, service.OpsClientBusinessLimitedReasonLocalFeatureGate)

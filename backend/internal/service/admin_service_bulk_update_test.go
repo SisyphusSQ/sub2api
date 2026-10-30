@@ -342,7 +342,7 @@ func TestAdminServiceBulkUpdateAccounts_NormalizesOpenAISettings(t *testing.T) {
 	require.Zero(t, result.LongContextInheritedCount)
 	require.Equal(t, 1, repo.bulkUpdateCalls)
 	require.Contains(t, repo.lastBulkUpdate.Credentials, openAIEndpointCapabilitiesCredentialKey)
-	require.Nil(t, repo.lastBulkUpdate.Credentials[openAIEndpointCapabilitiesCredentialKey])
+	require.Equal(t, []string{"chat_completions", "embeddings"}, repo.lastBulkUpdate.Credentials[openAIEndpointCapabilitiesCredentialKey])
 	require.Equal(t, true, repo.lastBulkUpdate.Extra[openAILongContextBillingEnabledKey])
 	require.Contains(t, repo.lastBulkUpdate.Extra, "openai_responses_mode")
 	require.Nil(t, repo.lastBulkUpdate.Extra["openai_responses_mode"])

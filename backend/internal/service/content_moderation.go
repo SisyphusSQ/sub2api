@@ -56,6 +56,7 @@ const (
 	ContentModerationProtocolOpenAIChat        = "openai_chat_completions"
 	ContentModerationProtocolGemini            = "gemini"
 	ContentModerationProtocolOpenAIImages      = "openai_images"
+	ContentModerationProtocolOpenAIDecisions   = "openai_decisions"
 	ContentModerationProtocolTypeSafeSystemOne = "typesafe_systemone"
 
 	defaultContentModerationBaseURL   = "https://api.openai.com"

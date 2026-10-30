@@ -1370,6 +1370,20 @@ describe('EditAccountModal', () => {
     expect(updateAccountMock.mock.calls[0]?.[1]?.extra?.openai_responses_supported).toBe(true)
   })
 
+  it('preserves Decisions capability when editing an existing account', async () => {
+    const account = buildAccount()
+    account.credentials.openai_capabilities = ['chat_completions', 'decisions']
+    updateAccountMock.mockReset()
+    checkMixedChannelRiskMock.mockReset()
+    checkMixedChannelRiskMock.mockResolvedValue({ has_risk: false })
+    updateAccountMock.mockResolvedValue(account)
+    const wrapper = mountModal(account)
+    await wrapper.get('form#edit-account-form').trigger('submit.prevent')
+    expect(updateAccountMock.mock.calls[0]?.[1]?.credentials?.openai_capabilities).toEqual([
+      'chat_completions', 'decisions'
+    ])
+  })
+
   it('submits OpenAI APIKey endpoint capabilities from credentials', async () => {
     const account = buildAccount()
     account.credentials.openai_capabilities = ['chat_completions']
@@ -1454,6 +1468,7 @@ describe('EditAccountModal', () => {
     updateAccountMock.mockResolvedValue(account)
 
     const wrapper = mountModal(account)
+    await wrapper.get('[data-testid="openai-endpoint-capability-decisions"]').setValue(false)
 
     const chatCheckbox = wrapper.get<HTMLInputElement>(
       '[data-testid="openai-endpoint-capability-chat_completions"]'
