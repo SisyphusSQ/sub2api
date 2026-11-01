@@ -88,6 +88,8 @@ const (
 	FieldIPAddress = "ip_address"
 	// FieldImageCount holds the string denoting the image_count field in the database.
 	FieldImageCount = "image_count"
+	// FieldAudioInputCharacters holds the string denoting the audio_input_characters field in the database.
+	FieldAudioInputCharacters = "audio_input_characters"
 	// FieldImageSize holds the string denoting the image_size field in the database.
 	FieldImageSize = "image_size"
 	// FieldImageInputSize holds the string denoting the image_input_size field in the database.
@@ -197,6 +199,7 @@ var Columns = []string{
 	FieldUserAgent,
 	FieldIPAddress,
 	FieldImageCount,
+	FieldAudioInputCharacters,
 	FieldImageSize,
 	FieldImageInputSize,
 	FieldImageOutputSize,
@@ -274,6 +277,8 @@ var (
 	IPAddressValidator func(string) error
 	// DefaultImageCount holds the default value on creation for the "image_count" field.
 	DefaultImageCount int
+	// DefaultAudioInputCharacters holds the default value on creation for the "audio_input_characters" field.
+	DefaultAudioInputCharacters int
 	// ImageSizeValidator is a validator for the "image_size" field. It is called by the builders before save.
 	ImageSizeValidator func(string) error
 	// ImageInputSizeValidator is a validator for the "image_input_size" field. It is called by the builders before save.
@@ -483,6 +488,11 @@ func ByIPAddress(opts ...sql.OrderTermOption) OrderOption {
 // ByImageCount orders the results by the image_count field.
 func ByImageCount(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldImageCount, opts...).ToFunc()
+}
+
+// ByAudioInputCharacters orders the results by the audio_input_characters field.
+func ByAudioInputCharacters(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAudioInputCharacters, opts...).ToFunc()
 }
 
 // ByImageSize orders the results by the image_size field.

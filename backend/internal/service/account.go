@@ -98,6 +98,7 @@ const (
 	OpenAIEndpointCapabilityDecisions       OpenAIEndpointCapability = "decisions"
 	OpenAIEndpointCapabilityAlphaSearch     OpenAIEndpointCapability = "alpha_search"
 	OpenAIEndpointCapabilityLive            OpenAIEndpointCapability = "live"
+	OpenAIEndpointCapabilityBailianTTS      OpenAIEndpointCapability = "bailian_tts"
 	// OpenAIEndpointCapabilityGrokMediaGeneration keeps image/video generation
 	// away from Grok accounts that are explicitly disabled or whose billing
 	// entitlement probe was forbidden. Video status lookups intentionally do not
@@ -1917,6 +1918,9 @@ func (a *Account) GetOpenAISessionID() string {
 func (a *Account) SupportsOpenAIEndpointCapability(capability OpenAIEndpointCapability) bool {
 	if a == nil {
 		return false
+	}
+	if a.Platform == PlatformBailian {
+		return a.Type == AccountTypeAPIKey && (capability == "" || capability == OpenAIEndpointCapabilityBailianTTS)
 	}
 	if capability == OpenAIEndpointCapabilitySeedance {
 		configured, _ := a.openAIEndpointCapabilitySet()

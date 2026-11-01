@@ -1817,6 +1817,7 @@ export interface UsageLog {
   subscription_id: number | null
 
   input_tokens: number
+  audio_input_characters?: number
   output_tokens: number
   cache_creation_tokens: number
   cache_read_tokens: number

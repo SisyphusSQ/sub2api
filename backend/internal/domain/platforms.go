@@ -48,6 +48,7 @@ var platformList = []PlatformSpec{
 	{ID: PlatformTypeSafe, DisplayName: "TypeSafe / Jev", Gateway: PlatformGatewayAnthropic, LiteLLMProvider: "typesafe"},
 	{ID: PlatformCommandCode, DisplayName: "Command Code", Gateway: PlatformGatewayOpenAI},
 	{ID: PlatformCline, DisplayName: "Cline", Gateway: PlatformGatewayOpenAI},
+	{ID: PlatformBailian, DisplayName: "阿里百炼 TTS", Gateway: PlatformGatewayOpenAI},
 }
 
 var platformIndex = func() map[string]int {

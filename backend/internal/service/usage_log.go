@@ -195,13 +195,14 @@ type UsageLog struct {
 	CacheTTLOverridden bool
 
 	// 图片生成字段
-	ImageCount         int
-	ImageSize          *string
-	ImageInputSize     *string
-	ImageOutputSize    *string
-	ImageSizeSource    *string
-	ImageSizeBreakdown map[string]int
-	MediaType          *string
+	ImageCount           int
+	AudioInputCharacters int
+	ImageSize            *string
+	ImageInputSize       *string
+	ImageOutputSize      *string
+	ImageSizeSource      *string
+	ImageSizeBreakdown   map[string]int
+	MediaType            *string
 
 	// 视频生成字段（Grok 视频按秒计费；video_count>0 的行不要求 image_size）
 	VideoCount           int

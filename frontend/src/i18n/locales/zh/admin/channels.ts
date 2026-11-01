@@ -108,6 +108,7 @@ export default {
       billingMode: {
         token: 'Token',
         perRequest: '按次',
+        characters: '按字符',
         image: '图片（按次）',
         video: '视频（按秒）'
       },
@@ -197,6 +198,8 @@ export default {
         restrictModels: '限制模型',
         restrictModelsHint: '开启后，仅允许模型定价列表中的模型。不在列表中的模型请求将被拒绝。',
         defaultPerRequestPrice: '默认单次价格（未命中层级时使用）',
+        defaultCharacterPrice: '字符价格（美元/百万计费字符）',
+        perMillionCharacters: '/百万计费字符',
         defaultImagePrice: '默认图片价格（未命中层级时使用）',
         defaultVideoPrice: '默认视频每秒价格（未命中层级时使用）',
         platformConfig: '平台配置',

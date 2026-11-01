@@ -4470,6 +4470,7 @@ const defaultBaseUrl = computed(() => {
   if (props.account?.platform === 'openai') return 'https://api.openai.com'
   if (props.account?.platform === 'gemini') return 'https://generativelanguage.googleapis.com'
   if (props.account?.platform === 'grok') return 'https://api.x.ai/v1'
+  if (props.account?.platform === 'bailian') return 'https://dashscope.aliyuncs.com'
   if (props.account?.platform === 'typesafe') return 'https://api.typesafe.ai'
   // CN 供应商：按当前模式/协议回落到官方预设（清空输入框提交时使用），
   // 不能落到 anthropic 默认值（会被当 CC base 拼出错误端点）。
@@ -4920,6 +4921,8 @@ const syncFormFromAccount = (newAccount: Account | null) => {
           ? 'https://generativelanguage.googleapis.com'
           : newAccount.platform === 'grok'
             ? 'https://api.x.ai/v1'
+            : newAccount.platform === 'bailian'
+              ? 'https://dashscope.aliyuncs.com'
             : newAccount.platform === 'typesafe'
               ? 'https://api.typesafe.ai'
             : isMultiProtocolApiKeyPlatform(newAccount.platform)

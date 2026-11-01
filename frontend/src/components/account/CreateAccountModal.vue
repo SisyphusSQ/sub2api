@@ -174,6 +174,7 @@
             TypeSafe / Jev
           </button>
         </div>
+        <button type="button" class="btn btn-secondary mt-2" data-testid="platform-bailian" @click="selectBailianPlatform()">阿里百炼 TTS</button>
         <!-- 国产厂商：Kimi / Zhipu GLM / DeepSeek / MiniMax -->
         <div class="mt-2 flex flex-wrap rounded-lg bg-gray-100 p-1 dark:bg-dark-700" data-testid="platform-row-cn">
           <button
@@ -4270,6 +4271,7 @@ const apiKeyHint = computed(() => {
 
 // Base URL / API Key 占位符：国产供应商随账号类型变化。
 const apiKeyBaseUrlPlaceholder = computed(() => {
+	if(form.platform === 'bailian') return 'https://dashscope.aliyuncs.com'
   if (isMultiProtocolPlatform.value) {
     const mode = form.platform === 'opencode_go' ? openCodeAccountMode.value : accountMode.value
     return defaultCNBaseUrl(form.platform, mode, apiProtocol.value) || 'https://api.example.com'
@@ -4289,6 +4291,7 @@ const apiKeyBaseUrlPlaceholder = computed(() => {
 })
 
 const apiKeyValuePlaceholder = computed(() => {
+	if(form.platform === 'bailian') return 'sk-...'
   switch (form.platform) {
     case 'openai':
       return 'sk-proj-...'
@@ -4416,6 +4419,12 @@ const adaptiveBaseUrls = ref<Record<CnNativeApiProtocol, string>>({
   responses: ''
 })
 const isCNPlatform = computed(() => isCNProviderPlatform(form.platform))
+
+const selectBailianPlatform = () => {
+  form.platform = 'bailian'
+  accountCategory.value = 'apikey'
+  apiKeyBaseUrl.value = 'https://dashscope.aliyuncs.com'
+}
 const isOpenCodeGoPlatform = computed(() => form.platform === 'opencode_go')
 const isMultiProtocolPlatform = computed(() => isMultiProtocolApiKeyPlatform(form.platform))
 // 前端没有专属界面、走通用表单的多协议供应商：模式、协议、默认端点
@@ -5136,6 +5145,7 @@ watch(
 watch(
   () => form.platform,
   (newPlatform) => {
+    if(newPlatform === 'bailian') accountCategory.value = 'apikey'
     // Reset base URL based on platform
     if (isMultiProtocolApiKeyPlatform(newPlatform)) {
       const mode = newPlatform === 'opencode_go' ? openCodeAccountMode.value : accountMode.value
@@ -5148,6 +5158,8 @@ watch(
             ? 'https://generativelanguage.googleapis.com'
             : newPlatform === 'grok'
               ? 'https://api.x.ai/v1'
+              : newPlatform === 'bailian'
+                ? 'https://dashscope.aliyuncs.com'
               : newPlatform === 'typesafe'
                 ? 'https://api.typesafe.ai'
               : 'https://api.anthropic.com'
@@ -6115,6 +6127,8 @@ const handleSubmit = async () => {
         ? 'https://generativelanguage.googleapis.com'
         : form.platform === 'grok'
           ? 'https://api.x.ai/v1'
+          : form.platform === 'bailian'
+            ? 'https://dashscope.aliyuncs.com'
           : form.platform === 'typesafe'
             ? 'https://api.typesafe.ai'
           : 'https://api.anthropic.com'

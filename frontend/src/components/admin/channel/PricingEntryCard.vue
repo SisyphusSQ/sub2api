@@ -192,7 +192,7 @@
         <div v-else-if="entry.billing_mode === 'per_request'">
           <!-- Default per-request price -->
           <label class="mt-3 block text-xs font-medium text-gray-500 dark:text-gray-400">
-            {{ t('admin.channels.form.defaultPerRequestPrice') }}
+            {{ props.platform === 'bailian' ? t('admin.channels.form.defaultCharacterPrice') : t('admin.channels.form.defaultPerRequestPrice') }}
             <span class="ml-1 font-normal text-gray-400">$</span>
           </label>
           <div class="mt-1 w-48">
@@ -336,7 +336,7 @@ const collapsed = ref(props.entry.models.length > 0)
 
 const billingModeOptions = computed(() => [
   { value: 'token', label: t('admin.channels.billingMode.token') },
-  { value: 'per_request', label: t('admin.channels.billingMode.perRequest') },
+  { value: 'per_request', label: props.platform === 'bailian' ? t('admin.channels.billingMode.characters') : t('admin.channels.billingMode.perRequest') },
   { value: 'image', label: t('admin.channels.billingMode.image') },
   { value: 'video', label: t('admin.channels.billingMode.video') }
 ])

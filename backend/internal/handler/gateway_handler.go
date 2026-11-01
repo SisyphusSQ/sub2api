@@ -1197,6 +1197,10 @@ func (h *GatewayHandler) Models(c *gin.Context) {
 	}
 
 	// Fallback to default models
+	if platform == service.PlatformBailian {
+		writeModelsList(c, platform, service.BailianTTSModels)
+		return
+	}
 	if platform == service.PlatformOpenAI {
 		writeModelsListResponse(c, openai.DefaultModels)
 		return
@@ -1480,6 +1484,8 @@ func defaultCodexModelIDsForPlatform(platform string) []string {
 
 func defaultModelIDsForPlatform(platform string) []string {
 	switch platform {
+	case service.PlatformBailian:
+		return append([]string(nil), service.BailianTTSModels...)
 	case service.PlatformOpenAI:
 		return openai.DefaultModelIDs()
 	case service.PlatformGemini:

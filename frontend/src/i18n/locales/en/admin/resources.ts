@@ -535,6 +535,7 @@ export default {
       cacheCreationCost: 'Cache Creation Cost',
       cacheReadCost: 'Cache Read Cost',
       inputTokens: 'Input Tokens',
+      audioInputCharacters: 'Audio input characters',
       outputTokens: 'Output Tokens',
       cacheCreationTokens: 'Cache Creation Tokens',
       cacheCreation5mTokens: 'Cache Write',

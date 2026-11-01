@@ -44776,6 +44776,8 @@ type UsageLogMutation struct {
 	ip_address                   *string
 	image_count                  *int
 	addimage_count               *int
+	audio_input_characters       *int
+	addaudio_input_characters    *int
 	image_size                   *string
 	image_input_size             *string
 	image_output_size            *string
@@ -46813,6 +46815,62 @@ func (m *UsageLogMutation) ResetImageCount() {
 	m.addimage_count = nil
 }
 
+// SetAudioInputCharacters sets the "audio_input_characters" field.
+func (m *UsageLogMutation) SetAudioInputCharacters(i int) {
+	m.audio_input_characters = &i
+	m.addaudio_input_characters = nil
+}
+
+// AudioInputCharacters returns the value of the "audio_input_characters" field in the mutation.
+func (m *UsageLogMutation) AudioInputCharacters() (r int, exists bool) {
+	v := m.audio_input_characters
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAudioInputCharacters returns the old "audio_input_characters" field's value of the UsageLog entity.
+// If the UsageLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UsageLogMutation) OldAudioInputCharacters(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAudioInputCharacters is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAudioInputCharacters requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAudioInputCharacters: %w", err)
+	}
+	return oldValue.AudioInputCharacters, nil
+}
+
+// AddAudioInputCharacters adds i to the "audio_input_characters" field.
+func (m *UsageLogMutation) AddAudioInputCharacters(i int) {
+	if m.addaudio_input_characters != nil {
+		*m.addaudio_input_characters += i
+	} else {
+		m.addaudio_input_characters = &i
+	}
+}
+
+// AddedAudioInputCharacters returns the value that was added to the "audio_input_characters" field in this mutation.
+func (m *UsageLogMutation) AddedAudioInputCharacters() (r int, exists bool) {
+	v := m.addaudio_input_characters
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetAudioInputCharacters resets all changes to the "audio_input_characters" field.
+func (m *UsageLogMutation) ResetAudioInputCharacters() {
+	m.audio_input_characters = nil
+	m.addaudio_input_characters = nil
+}
+
 // SetImageSize sets the "image_size" field.
 func (m *UsageLogMutation) SetImageSize(s string) {
 	m.image_size = &s
@@ -47474,7 +47532,7 @@ func (m *UsageLogMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UsageLogMutation) Fields() []string {
-	fields := make([]string, 0, 47)
+	fields := make([]string, 0, 48)
 	if m.user != nil {
 		fields = append(fields, usagelog.FieldUserID)
 	}
@@ -47585,6 +47643,9 @@ func (m *UsageLogMutation) Fields() []string {
 	}
 	if m.image_count != nil {
 		fields = append(fields, usagelog.FieldImageCount)
+	}
+	if m.audio_input_characters != nil {
+		fields = append(fields, usagelog.FieldAudioInputCharacters)
 	}
 	if m.image_size != nil {
 		fields = append(fields, usagelog.FieldImageSize)
@@ -47698,6 +47759,8 @@ func (m *UsageLogMutation) Field(name string) (ent.Value, bool) {
 		return m.IPAddress()
 	case usagelog.FieldImageCount:
 		return m.ImageCount()
+	case usagelog.FieldAudioInputCharacters:
+		return m.AudioInputCharacters()
 	case usagelog.FieldImageSize:
 		return m.ImageSize()
 	case usagelog.FieldImageInputSize:
@@ -47801,6 +47864,8 @@ func (m *UsageLogMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldIPAddress(ctx)
 	case usagelog.FieldImageCount:
 		return m.OldImageCount(ctx)
+	case usagelog.FieldAudioInputCharacters:
+		return m.OldAudioInputCharacters(ctx)
 	case usagelog.FieldImageSize:
 		return m.OldImageSize(ctx)
 	case usagelog.FieldImageInputSize:
@@ -48089,6 +48154,13 @@ func (m *UsageLogMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetImageCount(v)
 		return nil
+	case usagelog.FieldAudioInputCharacters:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAudioInputCharacters(v)
+		return nil
 	case usagelog.FieldImageSize:
 		v, ok := value.(string)
 		if !ok {
@@ -48224,6 +48296,9 @@ func (m *UsageLogMutation) AddedFields() []string {
 	if m.addimage_count != nil {
 		fields = append(fields, usagelog.FieldImageCount)
 	}
+	if m.addaudio_input_characters != nil {
+		fields = append(fields, usagelog.FieldAudioInputCharacters)
+	}
 	if m.addvideo_count != nil {
 		fields = append(fields, usagelog.FieldVideoCount)
 	}
@@ -48276,6 +48351,8 @@ func (m *UsageLogMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedFirstTokenMs()
 	case usagelog.FieldImageCount:
 		return m.AddedImageCount()
+	case usagelog.FieldAudioInputCharacters:
+		return m.AddedAudioInputCharacters()
 	case usagelog.FieldVideoCount:
 		return m.AddedVideoCount()
 	case usagelog.FieldVideoDurationSeconds:
@@ -48421,6 +48498,13 @@ func (m *UsageLogMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddImageCount(v)
+		return nil
+	case usagelog.FieldAudioInputCharacters:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddAudioInputCharacters(v)
 		return nil
 	case usagelog.FieldVideoCount:
 		v, ok := value.(int)
@@ -48708,6 +48792,9 @@ func (m *UsageLogMutation) ResetField(name string) error {
 		return nil
 	case usagelog.FieldImageCount:
 		m.ResetImageCount()
+		return nil
+	case usagelog.FieldAudioInputCharacters:
+		m.ResetAudioInputCharacters()
 		return nil
 	case usagelog.FieldImageSize:
 		m.ResetImageSize()

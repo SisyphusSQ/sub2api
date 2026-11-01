@@ -254,6 +254,9 @@ func (s *OpenAIGatewayService) RecordUsage(ctx context.Context, input *OpenAIRec
 		pricingAt,
 	)
 	if err != nil {
+		if result.BailianUsage != nil {
+			return fmt.Errorf("bailian usage could not be priced: %w", err)
+		}
 		if result.UpstreamEndpoint == "/v1/decisions" {
 			return fmt.Errorf("decisions usage could not be priced: %w", err)
 		}
@@ -407,12 +410,18 @@ func (s *OpenAIGatewayService) RecordUsage(ctx context.Context, input *OpenAIRec
 		ImageInputTokens:         result.Usage.ImageInputTokens,
 		ImageOutputTokens:        result.Usage.ImageOutputTokens,
 		ImageCount:               result.ImageCount,
-		ImageSize:                optionalTrimmedStringPtr(result.ImageSize),
-		ImageInputSize:           optionalTrimmedStringPtr(result.ImageInputSize),
-		ImageOutputSize:          optionalTrimmedStringPtr(result.ImageOutputSize),
-		ImageSizeSource:          optionalTrimmedStringPtr(result.ImageSizeSource),
-		ImageSizeBreakdown:       imageSizeBreakdown,
-		NativeCompactionV2:       input.NativeCompactionV2,
+		AudioInputCharacters: func() int {
+			if result.BailianUsage != nil {
+				return result.BailianUsage.Characters
+			}
+			return 0
+		}(),
+		ImageSize:          optionalTrimmedStringPtr(result.ImageSize),
+		ImageInputSize:     optionalTrimmedStringPtr(result.ImageInputSize),
+		ImageOutputSize:    optionalTrimmedStringPtr(result.ImageOutputSize),
+		ImageSizeSource:    optionalTrimmedStringPtr(result.ImageSizeSource),
+		ImageSizeBreakdown: imageSizeBreakdown,
+		NativeCompactionV2: input.NativeCompactionV2,
 	}
 	isVideoUsage := isGrokVideoUsageResult(result, billingModels)
 	if isVideoUsage {
@@ -525,7 +534,7 @@ func (s *OpenAIGatewayService) RecordUsage(ctx context.Context, input *OpenAIRec
 	}, s.billingDeps(), s.usageBillingRepo)
 
 	if billingErr != nil {
-		if result.DecisionsPricing != nil {
+		if result.DecisionsPricing != nil || result.BailianUsage != nil {
 			return billingErr
 		}
 		usageLog.ActualCost = 0
@@ -596,6 +605,23 @@ func (s *OpenAIGatewayService) calculateOpenAIRecordUsageCost(
 	modelLongContextExempt bool,
 	pricingAt time.Time,
 ) (*CostBreakdown, error) {
+	if result != nil && result.BailianUsage != nil {
+		if !result.BailianUsage.Present || result.BailianPricing == nil {
+			return nil, fmt.Errorf("bailian usage or pricing is missing: %w", ErrModelPricingUnavailable)
+		}
+		units := 1.0
+		if result.AudioUsage != nil {
+			units = result.AudioUsage.DurationOrUnits
+			if units == 0 {
+				return &CostBreakdown{BillingMode: string(BillingModePerRequest)}, nil
+			}
+		}
+		resolver := s.resolver
+		if resolver == nil {
+			resolver = NewModelPricingResolver(nil, s.billingService)
+		}
+		return s.billingService.CalculateCostUnified(CostInput{Ctx: ctx, Model: firstUsageBillingModel(billingModels), Tokens: tokens, UsageUnits: units, SizeTier: "tts", RequestCount: 1, RateMultiplier: multiplier, Resolved: result.BailianPricing, Resolver: resolver})
+	}
 	if result != nil && result.UpstreamEndpoint == "/v1/decisions" {
 		if result.DecisionsPricing == nil {
 			return nil, fmt.Errorf("missing Decisions pricing snapshot: %w", ErrModelPricingUnavailable)

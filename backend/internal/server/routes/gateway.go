@@ -209,6 +209,7 @@ func RegisterGatewayRoutes(
 		gateway.GET("/models/:model", h.Gateway.Models)
 		gateway.GET("/usage", h.Gateway.Usage)
 		gateway.POST("/live", h.OpenAIGateway.Live)
+		gateway.POST("/audio/speech", h.OpenAIGateway.BailianSpeech)
 		gateway.GET("/live/:call_id", h.OpenAIGateway.LiveSideband)
 		// OpenAI Responses API: auto-route based on group platform
 		gateway.POST("/responses", func(c *gin.Context) {
@@ -340,6 +341,14 @@ func RegisterGatewayRoutes(
 			h.Gateway.XSearch(c)
 		})
 	}
+
+	// 百炼原生接口复用网关鉴权与模型准入，不开放任意路径反代。
+	bailian := r.Group("/api/v1/services", bodyLimit, clientRequestID, opsErrorLogger, endpointNorm, gin.HandlerFunc(apiKeyAuth), groupModelAllowlist, compositeTarget, requireGroupAnthropic)
+	bailian.POST("/audio/tts/SpeechSynthesizer", h.OpenAIGateway.BailianSpeech)
+	bailian.POST("/aigc/multimodal-generation/generation", h.OpenAIGateway.BailianSpeech)
+	bailianWS := r.Group("/api-ws/v1", bodyLimit, clientRequestID, opsErrorLogger, endpointNorm, gin.HandlerFunc(apiKeyAuth), groupModelAllowlist, compositeTarget, requireGroupAnthropic)
+	bailianWS.GET("/inference", h.OpenAIGateway.BailianRealtime)
+	bailianWS.GET("/realtime", h.OpenAIGateway.BailianRealtime)
 
 	// Gemini 原生 API 兼容层（Gemini SDK/CLI 直连）
 	gemini := r.Group("/v1beta")

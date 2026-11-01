@@ -13,18 +13,18 @@ var (
 		PlatformAnthropic, PlatformOpenAI, PlatformGemini, PlatformAntigravity, PlatformGrok,
 		PlatformKimi, PlatformZhipu, PlatformDeepseek, PlatformMiniMax, PlatformOpenCodeGo, PlatformTypeSafe,
 		PlatformCommandCode,
-		PlatformCline,
+		PlatformCline, PlatformBailian,
 	}
 	legacyCompositePrecedence = []string{
 		PlatformAnthropic, PlatformGemini, PlatformOpenAI, PlatformAntigravity, PlatformGrok,
 		PlatformKimi, PlatformZhipu, PlatformDeepseek, PlatformMiniMax, PlatformOpenCodeGo, PlatformTypeSafe,
 		PlatformCommandCode,
-		PlatformCline,
+		PlatformCline, PlatformBailian,
 	}
 	legacyOpenAIGateway = []string{
 		PlatformOpenAI, PlatformGrok, PlatformKimi, PlatformZhipu, PlatformDeepseek, PlatformMiniMax, PlatformOpenCodeGo,
 		PlatformCommandCode,
-		PlatformCline,
+		PlatformCline, PlatformBailian,
 	}
 	legacyCNProviders    = []string{PlatformKimi, PlatformZhipu, PlatformDeepseek, PlatformMiniMax}
 	legacyLiteLLMByPlatf = map[string]string{

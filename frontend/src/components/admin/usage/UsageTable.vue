@@ -157,6 +157,9 @@
           <!-- Token 请求 -->
           <div v-else class="flex items-center gap-1.5">
             <div class="space-y-1 text-sm">
+              <div v-if="row.audio_input_characters && row.billing_mode === 'per_request'" class="text-gray-500">
+                {{ t('admin.usage.audioInputCharacters') }}: {{ row.audio_input_characters.toLocaleString() }}
+              </div>
               <div class="flex items-center gap-2">
                 <div class="inline-flex items-center gap-1">
                   <Icon name="arrowDown" size="sm" class="h-3.5 w-3.5 text-emerald-500" />
@@ -326,6 +329,10 @@
         <div class="space-y-1.5">
           <div>
             <div class="text-xs font-semibold text-gray-300 mb-1">{{ t('usage.tokenDetails') }}</div>
+            <div v-if="tokenTooltipData?.audio_input_characters" class="flex items-center justify-between gap-4">
+              <span class="text-gray-400">{{ t('admin.usage.audioInputCharacters') }}</span>
+              <span>{{ tokenTooltipData.audio_input_characters.toLocaleString() }}</span>
+            </div>
             <div v-if="tokenTooltipData && tokenTooltipData.input_tokens > 0 && !hasImageInputTokens(tokenTooltipData)" class="flex items-center justify-between gap-4">
               <span class="text-gray-400">{{ t('admin.usage.inputTokens') }}</span>
               <span class="font-medium text-white">{{ tokenTooltipData.input_tokens.toLocaleString() }}</span>

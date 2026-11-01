@@ -505,6 +505,20 @@ func (_c *UsageLogCreate) SetNillableImageCount(v *int) *UsageLogCreate {
 	return _c
 }
 
+// SetAudioInputCharacters sets the "audio_input_characters" field.
+func (_c *UsageLogCreate) SetAudioInputCharacters(v int) *UsageLogCreate {
+	_c.mutation.SetAudioInputCharacters(v)
+	return _c
+}
+
+// SetNillableAudioInputCharacters sets the "audio_input_characters" field if the given value is not nil.
+func (_c *UsageLogCreate) SetNillableAudioInputCharacters(v *int) *UsageLogCreate {
+	if v != nil {
+		_c.SetAudioInputCharacters(*v)
+	}
+	return _c
+}
+
 // SetImageSize sets the "image_size" field.
 func (_c *UsageLogCreate) SetImageSize(v string) *UsageLogCreate {
 	_c.mutation.SetImageSize(v)
@@ -765,6 +779,10 @@ func (_c *UsageLogCreate) defaults() {
 		v := usagelog.DefaultImageCount
 		_c.mutation.SetImageCount(v)
 	}
+	if _, ok := _c.mutation.AudioInputCharacters(); !ok {
+		v := usagelog.DefaultAudioInputCharacters
+		_c.mutation.SetAudioInputCharacters(v)
+	}
 	if _, ok := _c.mutation.VideoCount(); !ok {
 		v := usagelog.DefaultVideoCount
 		_c.mutation.SetVideoCount(v)
@@ -896,6 +914,9 @@ func (_c *UsageLogCreate) check() error {
 	}
 	if _, ok := _c.mutation.ImageCount(); !ok {
 		return &ValidationError{Name: "image_count", err: errors.New(`ent: missing required field "UsageLog.image_count"`)}
+	}
+	if _, ok := _c.mutation.AudioInputCharacters(); !ok {
+		return &ValidationError{Name: "audio_input_characters", err: errors.New(`ent: missing required field "UsageLog.audio_input_characters"`)}
 	}
 	if v, ok := _c.mutation.ImageSize(); ok {
 		if err := usagelog.ImageSizeValidator(v); err != nil {
@@ -1094,6 +1115,10 @@ func (_c *UsageLogCreate) createSpec() (*UsageLog, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.ImageCount(); ok {
 		_spec.SetField(usagelog.FieldImageCount, field.TypeInt, value)
 		_node.ImageCount = value
+	}
+	if value, ok := _c.mutation.AudioInputCharacters(); ok {
+		_spec.SetField(usagelog.FieldAudioInputCharacters, field.TypeInt, value)
+		_node.AudioInputCharacters = value
 	}
 	if value, ok := _c.mutation.ImageSize(); ok {
 		_spec.SetField(usagelog.FieldImageSize, field.TypeString, value)
@@ -1917,6 +1942,24 @@ func (u *UsageLogUpsert) UpdateImageCount() *UsageLogUpsert {
 // AddImageCount adds v to the "image_count" field.
 func (u *UsageLogUpsert) AddImageCount(v int) *UsageLogUpsert {
 	u.Add(usagelog.FieldImageCount, v)
+	return u
+}
+
+// SetAudioInputCharacters sets the "audio_input_characters" field.
+func (u *UsageLogUpsert) SetAudioInputCharacters(v int) *UsageLogUpsert {
+	u.Set(usagelog.FieldAudioInputCharacters, v)
+	return u
+}
+
+// UpdateAudioInputCharacters sets the "audio_input_characters" field to the value that was provided on create.
+func (u *UsageLogUpsert) UpdateAudioInputCharacters() *UsageLogUpsert {
+	u.SetExcluded(usagelog.FieldAudioInputCharacters)
+	return u
+}
+
+// AddAudioInputCharacters adds v to the "audio_input_characters" field.
+func (u *UsageLogUpsert) AddAudioInputCharacters(v int) *UsageLogUpsert {
+	u.Add(usagelog.FieldAudioInputCharacters, v)
 	return u
 }
 
@@ -2880,6 +2923,27 @@ func (u *UsageLogUpsertOne) AddImageCount(v int) *UsageLogUpsertOne {
 func (u *UsageLogUpsertOne) UpdateImageCount() *UsageLogUpsertOne {
 	return u.Update(func(s *UsageLogUpsert) {
 		s.UpdateImageCount()
+	})
+}
+
+// SetAudioInputCharacters sets the "audio_input_characters" field.
+func (u *UsageLogUpsertOne) SetAudioInputCharacters(v int) *UsageLogUpsertOne {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.SetAudioInputCharacters(v)
+	})
+}
+
+// AddAudioInputCharacters adds v to the "audio_input_characters" field.
+func (u *UsageLogUpsertOne) AddAudioInputCharacters(v int) *UsageLogUpsertOne {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.AddAudioInputCharacters(v)
+	})
+}
+
+// UpdateAudioInputCharacters sets the "audio_input_characters" field to the value that was provided on create.
+func (u *UsageLogUpsertOne) UpdateAudioInputCharacters() *UsageLogUpsertOne {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.UpdateAudioInputCharacters()
 	})
 }
 
@@ -4036,6 +4100,27 @@ func (u *UsageLogUpsertBulk) AddImageCount(v int) *UsageLogUpsertBulk {
 func (u *UsageLogUpsertBulk) UpdateImageCount() *UsageLogUpsertBulk {
 	return u.Update(func(s *UsageLogUpsert) {
 		s.UpdateImageCount()
+	})
+}
+
+// SetAudioInputCharacters sets the "audio_input_characters" field.
+func (u *UsageLogUpsertBulk) SetAudioInputCharacters(v int) *UsageLogUpsertBulk {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.SetAudioInputCharacters(v)
+	})
+}
+
+// AddAudioInputCharacters adds v to the "audio_input_characters" field.
+func (u *UsageLogUpsertBulk) AddAudioInputCharacters(v int) *UsageLogUpsertBulk {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.AddAudioInputCharacters(v)
+	})
+}
+
+// UpdateAudioInputCharacters sets the "audio_input_characters" field to the value that was provided on create.
+func (u *UsageLogUpsertBulk) UpdateAudioInputCharacters() *UsageLogUpsertBulk {
+	return u.Update(func(s *UsageLogUpsert) {
+		s.UpdateAudioInputCharacters()
 	})
 }
 

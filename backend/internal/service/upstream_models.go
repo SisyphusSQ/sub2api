@@ -784,6 +784,9 @@ func (s *AccountTestService) fetchUpstreamModelList(ctx context.Context, account
 }
 
 func (s *AccountTestService) fetchUpstreamModelListWithObservation(ctx context.Context, account *Account) (*upstreamModelListFetchResult, error) {
+	if account != nil && account.Platform == PlatformBailian {
+		return &upstreamModelListFetchResult{Models: append([]string(nil), BailianTTSModels...)}, nil
+	}
 	started := time.Now().UTC()
 	models, body, req, err := s.fetchUpstreamModelListRequest(ctx, account)
 	result := &upstreamModelListFetchResult{Models: models, Body: body}
