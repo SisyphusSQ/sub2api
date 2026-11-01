@@ -20,7 +20,7 @@ import (
 func TestEveryGatewayPOSTRouteIsClassifiedForPromptAuditCoverage(t *testing.T) {
 	routeSource, err := os.ReadFile("gateway.go")
 	require.NoError(t, err)
-	pattern := regexp.MustCompile(`(?:gateway|gemini|r|codexDirect|antigravityV1|antigravityV1Beta)\.POST\("([^"]+)"`)
+	pattern := regexp.MustCompile(`(?:gateway|bailian|gemini|r|codexDirect|antigravityV1|antigravityV1Beta)\.POST\("([^"]+)"`)
 	matches := pattern.FindAllStringSubmatch(string(routeSource), -1)
 	actual := map[string]struct{}{}
 	for _, match := range matches {
@@ -28,30 +28,33 @@ func TestEveryGatewayPOSTRouteIsClassifiedForPromptAuditCoverage(t *testing.T) {
 	}
 
 	audited := map[string][]string{
-		"/messages":                 {"gateway_handler.go", "openai_gateway_handler.go"},
-		"/systemone":                {"gateway_systemone.go"},
-		"/responses":                {"gateway_handler_responses.go", "openai_gateway_handler.go"},
-		"/responses/*subpath":       {"gateway_handler_responses.go", "openai_gateway_handler.go"},
-		"/chat/completions":         {"gateway_handler_chat_completions.go", "openai_chat_completions.go"},
-		"/embeddings":               {"openai_embeddings.go"},
-		"/decisions":                {"openai_decisions.go"},
-		"/alpha/search":             {"openai_alpha_search.go"},
-		"/live":                     {"openai_live.go"},
-		"/realtime/calls":           {"openai_live.go"},
-		"/images/generations":       {"openai_images.go", "grok_media.go"},
-		"/images/edits":             {"openai_images.go", "grok_media.go"},
-		"/images/generations/async": {"image_task_handler.go"},
-		"/images/edits/async":       {"image_task_handler.go"},
-		"/images/batches":           {"batch_image_handler.go"},
-		"/videos":                   {"grok_media.go"},
-		"/videos/generations":       {"grok_media.go"},
-		"/videos/edits":             {"grok_media.go"},
-		"/videos/extensions":        {"grok_media.go"},
-		"/models/*modelAction":      {"gemini_v1beta_handler.go"},
-		"/cachedContents":           {"gemini_cached_contents_handler.go"},
-		"/tts":                      {"grok_audio.go"},
-		"/web_search":               {"gateway_web_search.go"},
-		"/x_search":                 {"gateway_web_search.go"},
+		"/messages":                              {"gateway_handler.go", "openai_gateway_handler.go"},
+		"/systemone":                             {"gateway_systemone.go"},
+		"/responses":                             {"gateway_handler_responses.go", "openai_gateway_handler.go"},
+		"/responses/*subpath":                    {"gateway_handler_responses.go", "openai_gateway_handler.go"},
+		"/chat/completions":                      {"gateway_handler_chat_completions.go", "openai_chat_completions.go"},
+		"/embeddings":                            {"openai_embeddings.go"},
+		"/decisions":                             {"openai_decisions.go"},
+		"/alpha/search":                          {"openai_alpha_search.go"},
+		"/live":                                  {"openai_live.go"},
+		"/realtime/calls":                        {"openai_live.go"},
+		"/images/generations":                    {"openai_images.go", "grok_media.go"},
+		"/images/edits":                          {"openai_images.go", "grok_media.go"},
+		"/images/generations/async":              {"image_task_handler.go"},
+		"/images/edits/async":                    {"image_task_handler.go"},
+		"/images/batches":                        {"batch_image_handler.go"},
+		"/videos":                                {"grok_media.go"},
+		"/videos/generations":                    {"grok_media.go"},
+		"/videos/edits":                          {"grok_media.go"},
+		"/videos/extensions":                     {"grok_media.go"},
+		"/models/*modelAction":                   {"gemini_v1beta_handler.go"},
+		"/cachedContents":                        {"gemini_cached_contents_handler.go"},
+		"/tts":                                   {"grok_audio.go"},
+		"/audio/speech":                          {"bailian_tts.go"},
+		"/audio/tts/SpeechSynthesizer":           {"bailian_tts.go"},
+		"/aigc/multimodal-generation/generation": {"bailian_tts.go"},
+		"/web_search":                            {"gateway_web_search.go"},
+		"/x_search":                              {"gateway_web_search.go"},
 	}
 	excluded := map[string]string{
 		"/messages/count_tokens":     "tokenization only; it does not execute a model request",

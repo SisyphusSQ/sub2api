@@ -240,6 +240,11 @@ func ImageCount(v int) predicate.UsageLog {
 	return predicate.UsageLog(sql.FieldEQ(FieldImageCount, v))
 }
 
+// AudioInputCharacters applies equality check predicate on the "audio_input_characters" field. It's identical to AudioInputCharactersEQ.
+func AudioInputCharacters(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldEQ(FieldAudioInputCharacters, v))
+}
+
 // ImageSize applies equality check predicate on the "image_size" field. It's identical to ImageSizeEQ.
 func ImageSize(v string) predicate.UsageLog {
 	return predicate.UsageLog(sql.FieldEQ(FieldImageSize, v))
@@ -1973,6 +1978,46 @@ func ImageCountLT(v int) predicate.UsageLog {
 // ImageCountLTE applies the LTE predicate on the "image_count" field.
 func ImageCountLTE(v int) predicate.UsageLog {
 	return predicate.UsageLog(sql.FieldLTE(FieldImageCount, v))
+}
+
+// AudioInputCharactersEQ applies the EQ predicate on the "audio_input_characters" field.
+func AudioInputCharactersEQ(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldEQ(FieldAudioInputCharacters, v))
+}
+
+// AudioInputCharactersNEQ applies the NEQ predicate on the "audio_input_characters" field.
+func AudioInputCharactersNEQ(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldNEQ(FieldAudioInputCharacters, v))
+}
+
+// AudioInputCharactersIn applies the In predicate on the "audio_input_characters" field.
+func AudioInputCharactersIn(vs ...int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldIn(FieldAudioInputCharacters, vs...))
+}
+
+// AudioInputCharactersNotIn applies the NotIn predicate on the "audio_input_characters" field.
+func AudioInputCharactersNotIn(vs ...int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldNotIn(FieldAudioInputCharacters, vs...))
+}
+
+// AudioInputCharactersGT applies the GT predicate on the "audio_input_characters" field.
+func AudioInputCharactersGT(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldGT(FieldAudioInputCharacters, v))
+}
+
+// AudioInputCharactersGTE applies the GTE predicate on the "audio_input_characters" field.
+func AudioInputCharactersGTE(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldGTE(FieldAudioInputCharacters, v))
+}
+
+// AudioInputCharactersLT applies the LT predicate on the "audio_input_characters" field.
+func AudioInputCharactersLT(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldLT(FieldAudioInputCharacters, v))
+}
+
+// AudioInputCharactersLTE applies the LTE predicate on the "audio_input_characters" field.
+func AudioInputCharactersLTE(v int) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldLTE(FieldAudioInputCharacters, v))
 }
 
 // ImageSizeEQ applies the EQ predicate on the "image_size" field.

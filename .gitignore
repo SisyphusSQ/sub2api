@@ -136,10 +136,12 @@ deploy/docker-compose.override.yml
 vite.config.js
 docs/*
 !docs/OPENAI_DECISIONS.md
+!docs/BAILIAN_TTS.md
 !docs/local/
 docs/local/*
 !docs/local/too-675-verification.md
 !docs/local/too-674-verification.md
+!docs/local/too-680-verification.md
 !docs/admin-api-keys.md
 !docs/PAYMENT.md
 !docs/PAYMENT_CN.md

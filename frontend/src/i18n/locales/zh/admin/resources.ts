@@ -532,6 +532,7 @@ export default {
       cacheCreationCost: '缓存创建费用',
       cacheReadCost: '缓存读取费用',
       inputTokens: '输入 Token',
+      audioInputCharacters: '音频输入字符数',
       outputTokens: '输出 Token',
       cacheCreationTokens: '缓存创建 Token',
       cacheCreation5mTokens: '缓存创建',

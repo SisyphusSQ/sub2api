@@ -108,6 +108,7 @@ export default {
       billingMode: {
         token: 'Token',
         perRequest: 'Per Request',
+        characters: 'Per Character',
         image: 'Image (Per Request)',
         video: 'Video (Per Second)'
       },
@@ -197,6 +198,8 @@ export default {
         restrictModels: 'Restrict Models',
         restrictModelsHint: 'When enabled, only models in the pricing list are allowed. Others will be rejected.',
         defaultPerRequestPrice: 'Default per-request price (fallback when no tier matches)',
+        defaultCharacterPrice: 'Character price (USD per million billed characters)',
+        perMillionCharacters: '/million billed characters',
         defaultImagePrice: 'Default image price (fallback when no tier matches)',
         defaultVideoPrice: 'Default video price per second (fallback when no tier matches)',
         platformConfig: 'Platform Configuration',

@@ -1,5 +1,11 @@
 export default {
     accounts: {
+      bailian: {
+        complete: 'TTS: complete audio',
+        stream: 'TTS: streaming audio',
+        voice: 'Voice ID (optional; next uses references)',
+        hint: 'Next supports complete audio only. Streaming tests report first-audio latency and provide a temporary preview.'
+      },
       title: 'Account Management',
       description: 'Manage AI platform accounts and credentials',
       createAccount: 'Create Account',

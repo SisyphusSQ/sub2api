@@ -773,6 +773,27 @@ func (_u *UsageLogUpdate) AddImageCount(v int) *UsageLogUpdate {
 	return _u
 }
 
+// SetAudioInputCharacters sets the "audio_input_characters" field.
+func (_u *UsageLogUpdate) SetAudioInputCharacters(v int) *UsageLogUpdate {
+	_u.mutation.ResetAudioInputCharacters()
+	_u.mutation.SetAudioInputCharacters(v)
+	return _u
+}
+
+// SetNillableAudioInputCharacters sets the "audio_input_characters" field if the given value is not nil.
+func (_u *UsageLogUpdate) SetNillableAudioInputCharacters(v *int) *UsageLogUpdate {
+	if v != nil {
+		_u.SetAudioInputCharacters(*v)
+	}
+	return _u
+}
+
+// AddAudioInputCharacters adds value to the "audio_input_characters" field.
+func (_u *UsageLogUpdate) AddAudioInputCharacters(v int) *UsageLogUpdate {
+	_u.mutation.AddAudioInputCharacters(v)
+	return _u
+}
+
 // SetImageSize sets the "image_size" field.
 func (_u *UsageLogUpdate) SetImageSize(v string) *UsageLogUpdate {
 	_u.mutation.SetImageSize(v)
@@ -1326,6 +1347,12 @@ func (_u *UsageLogUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.AddedImageCount(); ok {
 		_spec.AddField(usagelog.FieldImageCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AudioInputCharacters(); ok {
+		_spec.SetField(usagelog.FieldAudioInputCharacters, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedAudioInputCharacters(); ok {
+		_spec.AddField(usagelog.FieldAudioInputCharacters, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.ImageSize(); ok {
 		_spec.SetField(usagelog.FieldImageSize, field.TypeString, value)
@@ -2287,6 +2314,27 @@ func (_u *UsageLogUpdateOne) AddImageCount(v int) *UsageLogUpdateOne {
 	return _u
 }
 
+// SetAudioInputCharacters sets the "audio_input_characters" field.
+func (_u *UsageLogUpdateOne) SetAudioInputCharacters(v int) *UsageLogUpdateOne {
+	_u.mutation.ResetAudioInputCharacters()
+	_u.mutation.SetAudioInputCharacters(v)
+	return _u
+}
+
+// SetNillableAudioInputCharacters sets the "audio_input_characters" field if the given value is not nil.
+func (_u *UsageLogUpdateOne) SetNillableAudioInputCharacters(v *int) *UsageLogUpdateOne {
+	if v != nil {
+		_u.SetAudioInputCharacters(*v)
+	}
+	return _u
+}
+
+// AddAudioInputCharacters adds value to the "audio_input_characters" field.
+func (_u *UsageLogUpdateOne) AddAudioInputCharacters(v int) *UsageLogUpdateOne {
+	_u.mutation.AddAudioInputCharacters(v)
+	return _u
+}
+
 // SetImageSize sets the "image_size" field.
 func (_u *UsageLogUpdateOne) SetImageSize(v string) *UsageLogUpdateOne {
 	_u.mutation.SetImageSize(v)
@@ -2870,6 +2918,12 @@ func (_u *UsageLogUpdateOne) sqlSave(ctx context.Context) (_node *UsageLog, err 
 	}
 	if value, ok := _u.mutation.AddedImageCount(); ok {
 		_spec.AddField(usagelog.FieldImageCount, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AudioInputCharacters(); ok {
+		_spec.SetField(usagelog.FieldAudioInputCharacters, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedAudioInputCharacters(); ok {
+		_spec.AddField(usagelog.FieldAudioInputCharacters, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.ImageSize(); ok {
 		_spec.SetField(usagelog.FieldImageSize, field.TypeString, value)

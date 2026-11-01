@@ -1,5 +1,11 @@
 export default {
     accounts: {
+      bailian: {
+        complete: 'TTS：非流式合成',
+        stream: 'TTS：流式合成',
+        voice: '音色 ID（可选；next 使用参考音频）',
+        hint: 'next 仅支持非流式。流式测试显示首段耗时并提供临时音频预览。'
+      },
       title: '账号管理',
       description: '管理 AI 平台账号和 Cookie',
       createAccount: '添加账号',

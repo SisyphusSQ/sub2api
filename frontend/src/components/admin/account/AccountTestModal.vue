@@ -56,6 +56,11 @@
         </p>
       </div>
 
+      <div v-if="isBailianAccount" class="space-y-2">
+        <Select v-model="bailianMode" :options="bailianModes" :disabled="status === 'connecting'" />
+        <input v-model="bailianVoice" class="input" :placeholder="t('admin.accounts.bailian.voice')" :disabled="status === 'connecting'" />
+        <p class="text-xs text-gray-500">{{ t('admin.accounts.bailian.hint') }}</p>
+      </div>
       <div v-if="showModelSelect" class="space-y-1.5">
         <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
           {{ t('admin.accounts.selectTestModel') }}
@@ -424,6 +429,13 @@ const imageFileInput = ref<HTMLInputElement | null>(null)
 const audioFileInput = ref<HTMLInputElement | null>(null)
 const isOpenAIAccount = computed(() => props.account?.platform === 'openai')
 const isGrokAccount = computed(() => props.account?.platform === 'grok')
+const isBailianAccount = computed(() => props.account?.platform === 'bailian')
+const bailianMode = ref('tts')
+const bailianVoice = ref('')
+const bailianModes = computed(() => [
+  { value: 'tts', label: t('admin.accounts.bailian.complete') },
+  { value: 'tts_stream', label: t('admin.accounts.bailian.stream') }
+])
 const openAITestModeOptions = computed(() => [
   { value: 'default', label: t('admin.accounts.openai.testModeDefault') },
   { value: 'compact', label: t('admin.accounts.openai.testModeCompact') }
@@ -497,6 +509,7 @@ const modelOptionsForMode = computed(() => {
 })
 
 const supportsPromptInput = computed(() => {
+  if (isBailianAccount.value) return true
   if (!isGrokAccount.value) {
     return supportsImageTest.value
   }
@@ -850,12 +863,17 @@ const startTest = async () => {
       mode?: string
       image_data_url?: string
       audio_data_url?: string
+      bailian_voice?: string
     } = {
       model_id: showModelSelect.value ? selectedModelId.value : '',
       prompt: supportsPromptInput.value ? testPrompt.value.trim() : ''
     }
     if (isOpenAIAccount.value) {
       requestBody.mode = testMode.value
+    }
+    if (isBailianAccount.value) {
+      requestBody.mode = bailianMode.value
+      requestBody.bailian_voice = bailianVoice.value.trim()
     }
     if (isGrokAccount.value) {
       // Always send explicit Grok mode. search/tts/stt/realtime are standalone

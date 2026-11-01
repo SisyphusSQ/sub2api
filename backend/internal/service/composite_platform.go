@@ -160,6 +160,8 @@ func DetectModelPlatform(model string) (string, bool) {
 		return PlatformMiniMax, true
 	case normalized == "jev-latest" || strings.HasPrefix(normalized, "jev-"):
 		return PlatformTypeSafe, true
+	case strings.HasPrefix(normalized, "qwen-audio-") && strings.Contains(normalized, "-tts-"), strings.HasPrefix(normalized, "qwen3-tts-"), strings.HasPrefix(normalized, "cosyvoice-"):
+		return PlatformBailian, true
 	default:
 		return "", false
 	}

@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/config"
+	"github.com/Wei-Shaw/sub2api/internal/pkg/bailiantts"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/ip"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/openai"
@@ -259,6 +260,9 @@ type OpenAIForwardResult struct {
 	UpstreamEndpoint string
 	// DecisionsPricing 为转发前固定的端点定价；异步记账不重新解析聊天价卡。
 	DecisionsPricing *ResolvedPricing
+	// BailianPricing 固定每模型的显式定价，禁止回落到 Grok 语音默认价。
+	BailianPricing *ResolvedPricing
+	BailianUsage   *bailiantts.Usage
 	// ServiceTier is the final tier sent upstream after policy rewriting.
 	// The upstream response declaration remains separate above and is reconciled
 	// at usage-recording time, where the credential protocol is available.
