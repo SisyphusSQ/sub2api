@@ -1,6 +1,7 @@
 package service
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -267,6 +268,10 @@ func (s *OpenAIGatewayService) ProxyBailianTTS(ctx context.Context, c *gin.Conte
 						return err
 					}
 				}
+			}
+			if failed {
+				// 与 HTTP 错误响应一致，防止上游错误说明回显账号凭据。
+				f.body = bytes.ReplaceAll(f.body, []byte(key), []byte("[redacted]"))
 			}
 			if err := client.Write(ctx, f.kind, f.body); err != nil {
 				return err

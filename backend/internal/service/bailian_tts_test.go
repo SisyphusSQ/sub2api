@@ -53,6 +53,10 @@ func TestBailianWebSocketPreservesBinaryAndBillsReusedClientIDsSeparately(t *tes
 		if _, _, err = conn.Read(ctx); err != nil {
 			return
 		}
+		if r.Header.Get("X-DashScope-WorkSpace") == "fixture-redaction" {
+			_ = conn.Write(ctx, ws.MessageText, []byte(`{"header":{"event":"task-failed","task_id":"reused"},"payload":{"message":"credential fixture-upstream rejected"}}`))
+			return
+		}
 		for _, message := range []struct {
 			kind ws.MessageType
 			body string
@@ -117,6 +121,23 @@ func TestBailianWebSocketPreservesBinaryAndBillsReusedClientIDsSeparately(t *tes
 		}
 	}
 	require.NotEqual(t, ids[0], ids[1], "reused client task IDs must not suppress billing for a new synthesis")
+	t.Run("redacts_upstream_task_error", func(t *testing.T) {
+		account.Credentials["workspace_id"] = "fixture-redaction"
+		client, _, err := ws.Dial(ctx, "ws"+strings.TrimPrefix(downstream.URL, "http")+bailiantts.InferencePath, nil)
+		require.NoError(t, err)
+		defer func() { _ = client.CloseNow() }()
+		kind, body, err := client.Read(ctx)
+		require.NoError(t, err)
+		require.Equal(t, ws.MessageText, kind)
+		require.Contains(t, string(body), "[redacted]")
+		require.NotContains(t, string(body), "fixture-upstream")
+		select {
+		case err := <-finished:
+			require.ErrorContains(t, err, "task failed")
+		case <-ctx.Done():
+			t.Fatal("error relay did not exit")
+		}
+	})
 }
 
 func TestBailianSSERejectsIncompleteAndMissingUsage(t *testing.T) {

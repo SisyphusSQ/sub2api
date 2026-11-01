@@ -37,3 +37,5 @@ Key 从用户指定的 sqdt02 私有文件安全取得；凭据和原始响应�
 - 本机未运行 Docker/testcontainers 全套集成；本功能通过真实隔离 PostgreSQL、Redis、上游模型及音频解码验收。
 - sqmc03 原配置、PostgreSQL custom dump、应用数据卷已备份到该机私有备份目录；源库最新迁移为 248。镜像摘要、最终线上模型价卡和部署回执将在需求卡交付评论中记录。
 - 提交与合并收尾按约定不重复测试。CI、源码合并和真实部署均以各自回执为准。
+
+- Review 补充：WebSocket 的 `task-failed/error` 文本帧也会移除上游账号 Key；增加实际 WS 错误帧回显场景，定向 race 回归通过。
