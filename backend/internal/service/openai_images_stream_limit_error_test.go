@@ -93,7 +93,7 @@ func TestImageStreamTransportLimitEmitsErrorAndPreservesUsage(t *testing.T) {
 					require.ErrorIs(t, err, errSSETransportLimit)
 					require.True(t, body.closed.Load(), "transport-limit failures must release the upstream body")
 					wantUsage := OpenAIUsage{InputTokens: 11, OutputTokens: 7}
-					if route == "direct" {
+					if route != "responses" {
 						wantUsage.ImageOutputTokens = 7
 					}
 					require.Equal(t, wantUsage, usage)
@@ -128,7 +128,7 @@ func TestImageStreamPassthroughPreservesRawFrames(t *testing.T) {
 				usage, count, _, _, err := svc.handleOpenAIImagesStreamingResponse(resp, c, time.Now(), nil)
 				require.NoError(t, err)
 				require.Equal(t, wire, rec.Body.String(), "passthrough must retain CRLF, comments, unknown fields and unterminated EOF bytes")
-				require.Equal(t, OpenAIUsage{InputTokens: 11, OutputTokens: 7}, usage)
+				require.Equal(t, OpenAIUsage{InputTokens: 11, OutputTokens: 7, ImageOutputTokens: 7}, usage)
 				require.Equal(t, 1, count)
 			})
 		}
