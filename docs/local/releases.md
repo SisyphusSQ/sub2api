@@ -1,5 +1,31 @@
 # 版本记录
 
+## 2026-11-08 v0.2.20 同步与 Review 修复（未部署）
+
+### Review 修复与补充实测
+
+- 从 PR #5 的 `084239cf` 建立 `suqing/fix/pr5-sync-regressions`，修复位于开发目录 `/Users/suqing/Coding/golang/00_self/sub2api`。用户已授权通过 ensure / ship 记录并交付，源码合入与远端 CI 状态以该修复分支的实际 PR 回执为准；生产部署仍单独决定。
+- 图片流超限和原样透传测试按本地生图计费契约校验 `ImageOutputTokens`，保留实际计费逻辑，以及原始帧、终止事件、上游资源释放等断言。
+- 百炼统一语音和两个原生 HTTP 入口复用请求体公共错误处理；覆盖超限 413、超时 408、截断 400、内存预算不足 503 / `Retry-After` 和取消 499。新增用例先复现原错误，再验证修复。
+- 全量回归期间发现两项既有内存断言受到进程内其他后台分配干扰：账号映射的堆增量测试与大转义字符串的零分配测试。两者改在独立测试进程运行，保留原 8 MiB 上限、零分配要求及全部业务断言；未修改业务实现。
+- 已补齐锁定版本 Go 依赖，未修改 `go.mod` / `go.sum`。前端按锁离线安装且禁用安装脚本，重新构建前端及嵌入前端的后端；产物版本标识为 `0.2.20+pr5fix.084239cf`，不作为发版。
+- Go 1.27.3 的 `GOFLAGS='-mod=readonly -p=1' make test-unit` 完整通过；百炼、图片流、图片计费和 Decisions 定向测试及 race 通过。内存测试辅助函数最后改为使用 `os.Executable()` 定位自身后，两项内存测试各连续 3 次通过；最终源码静态检查为 `0 issues`。
+- 真实验收使用 sqmc03 新建的临时 PostgreSQL 容器、sqmc05 独立 Redis 与回环网关 `127.0.0.1:8087`。项目迁移器从 300 条历史迁移升级到 301 条，仅增加 `249_mcp_oauth.sql`；原 300 条校验和全部匹配，重复启动后历史不变。同步专用库仍为 299 条，未写入生产数据库。
+- 9 次真实上游调用全部 HTTP 200：百炼 plus/flash 各非流式及流式、next 非流式共 5 次；Decisions 的 predicate/choice/score 组合 2 次；Flare 非流式图片及 Sunburst SSE 图片各 1 次。5 份 MP3 均可解码，2 张 PNG 均为 1024×1024。Decisions 本轮两次均未报告缓存命中，不将其计为真实缓存验收。
+- 9 条账单、9 条扣费去重记录及余额 / Key 配额逐笔核对一致；图片输出只计入图片输出费用，百炼字符与 Token 分别按显式价卡复算。网关内部扣费合计 USD 0.01351728；供应商实际账单未核对。真实 ChatGPT OAuth、WS 生图及本轮未调用的其他协议仍未实测。
+- 测试账号和 Key 已停用，账号中的上游凭据已清除；账单、数据库备份与私有证据保留在 sqmc05 `/Users/suqing/.local/share/sub2api/checks/pr5-sync-regressions-20261108/`。临时网关、Redis、SSH 转发和 PostgreSQL 容器均已停止，sqmc03 原容器状态与启动时间未变。
+- `make test-integration` 退出成功，但 Docker/testcontainers 相关测试因本机缺少 Docker 而自行跳过，本地集成仅记为部分覆盖；远端 CI 以平台回执为准，生产部署未执行。
+
+### 初始候选记录
+
+- 从 `suqing/stable` 提交 `89bae09db` 合入上游正式标签 `v0.2.20`（提交 `dab829a4e`）；上游包含 MCP OAuth、管理密钥范围、请求资源限制和图片尺寸路由等变化。
+- 保留 Decisions、生图计费和百炼 TTS 本地实现；账户表单冲突同时保留 Decisions 默认端点与上游图片尺寸档位。前端依赖锁与上游正式版一致；已回迁 OAuth 修复的后端等价回归仍待执行。
+- 首个候选的 GitHub 安全检查发现 Decisions 调用了上游已删除的 `extractMaxBytesError`；现已改用上游统一的请求体错误处理，并增加超限、超时、截断和内存预算回归用例。这些 Go 用例尚未在本机运行，新的 CI 结果须另行核对。
+- 前端依赖按锁安装且未执行安装脚本。修复上游配额测试缺少本地百炼平台及管理员密钥页面的百炼名称语言适配后，前端构建通过；完整 Vitest 384 个文件、3090 项测试通过。
+- 专用测试库的 299 条迁移记录及摘要与既有基线一致；两份 `249` 迁移在单事务内执行并检查预期表与列，随后回滚并确认迁移历史未变。此项未运行项目迁移器，也不是部署迁移；上线前仍须核对数据库状态、迁移与回退风险。
+- Go 缓存缺少 `github.com/MoeForge/moego@v0.1.0-alpha.1`、`github.com/andybalholm/brotli@v1.2.7` 和 `github.com/klauspost/compress@v1.20.2`，离线后端构建和回归阻塞。Docker/testcontainers 集成、真实付费上游调用及运行环境验收未执行。
+- 本条仅记录候选验证；PR 审查、稳定分支接受和部署需另行完成。
+
 ## 2026-11-01 百炼 TTS 补丁（TOO-680）
 
 - 基线 `eaf9d0e7b`；新增百炼 API Key 平台、HTTP/SSE/原生 WS 和统一语音入口，plus、flash、next 实际上游调用通过；next 仅开放非流式。

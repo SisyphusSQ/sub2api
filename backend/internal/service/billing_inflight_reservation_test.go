@@ -434,6 +434,9 @@ func attachInflightSnapshot(svc *GatewayService, snap *inflightSnapshotCacheStub
 
 // 已定价模型永不查账号映射；随机未定价模型名不直接查库、不产生按模型名的缓存（内存有界）。
 func TestInflightEstimate_AccountMappingNoDBAndBoundedMemory(t *testing.T) {
+	if runMemoryTestInSubprocess(t) {
+		return
+	}
 	groupID := int64(40)
 	svc := newInflightEstimateGateway(t, nil)
 	snap := &inflightSnapshotCacheStub{byBucket: map[string][]Account{inflightBucketKey(groupID, PlatformAnthropic): {

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -21,14 +20,14 @@ import (
 
 // BailianSpeech 提供统一 audio/speech 与百炼原生 HTTP 入口。
 func (h *OpenAIGatewayHandler) BailianSpeech(c *gin.Context) {
+	reqLog := requestLogger(c, "handler.bailian_tts")
 	body, err := httputil.ReadRequestBodyWithPrealloc(c.Request)
 	if err != nil {
-		status := 400
-		var large *http.MaxBytesError
-		if errors.As(err, &large) {
-			status = 413
+		if handleRequestBodyReadError(c, reqLog, err) {
+			return
 		}
-		h.errorResponse(c, status, "invalid_request_error", "Unable to read speech request")
+		status, message := requestBodyReadFailure(reqLog, c.Request, err)
+		h.errorResponse(c, status, "invalid_request_error", message)
 		return
 	}
 	if !gjson.ValidBytes(body) {
