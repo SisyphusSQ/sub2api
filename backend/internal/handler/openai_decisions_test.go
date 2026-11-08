@@ -5,13 +5,17 @@ package handler
 import (
 	"context"
 	"io"
+	"net"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"sync/atomic"
 	"testing"
+	"testing/iotest"
 
 	"github.com/Wei-Shaw/sub2api/internal/config"
+	pkghttputil "github.com/Wei-Shaw/sub2api/internal/pkg/httputil"
 	"github.com/Wei-Shaw/sub2api/internal/server/middleware"
 	"github.com/Wei-Shaw/sub2api/internal/service"
 	"github.com/gin-gonic/gin"
@@ -123,4 +127,36 @@ func TestDecisionsHandlerRequiresDownstreamCredentials(t *testing.T) {
 	c.Request = httptest.NewRequest(http.MethodPost, "/v1/decisions", strings.NewReader(`{}`))
 	(&OpenAIGatewayHandler{}).Decisions(c)
 	require.Equal(t, http.StatusUnauthorized, recorder.Code)
+}
+
+func TestDecisionsHandlerClassifiesBodyReadFailures(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	tests := []struct {
+		name       string
+		body       io.Reader
+		limit      int64
+		wantStatus int
+		message    string
+	}{
+		{"too large", strings.NewReader("123456"), 2, http.StatusRequestEntityTooLarge, "Request body too large, limit is 2B"},
+		{"timeout", iotest.ErrReader(&net.OpError{Op: "read", Net: "tcp", Err: os.ErrDeadlineExceeded}), 0, http.StatusRequestTimeout, "Timed out reading request body"},
+		{"truncated", iotest.ErrReader(io.ErrUnexpectedEOF), 0, http.StatusBadRequest, "Failed to read request body"},
+		{"memory budget", iotest.ErrReader(pkghttputil.ErrRequestBodyMemoryBudget), 0, http.StatusServiceUnavailable, "Request body buffering capacity is exhausted"},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			recorder := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(recorder)
+			c.Request = httptest.NewRequest(http.MethodPost, "/v1/decisions", tc.body)
+			if tc.limit > 0 {
+				c.Request.Body = http.MaxBytesReader(recorder, c.Request.Body, tc.limit)
+			}
+			c.Set(string(middleware.ContextKeyAPIKey), &service.APIKey{ID: 1})
+			c.Set(string(middleware.ContextKeyUser), middleware.AuthSubject{UserID: 1, Concurrency: 1})
+			h := NewOpenAIGatewayHandler(&service.OpenAIGatewayService{}, &service.ConcurrencyService{}, &service.BillingCacheService{}, &service.APIKeyService{}, nil, nil, nil, nil, nil)
+			h.Decisions(c)
+			require.Equal(t, tc.wantStatus, recorder.Code, recorder.Body.String())
+			require.Contains(t, recorder.Body.String(), tc.message)
+		})
+	}
 }
