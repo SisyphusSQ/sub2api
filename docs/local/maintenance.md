@@ -9,6 +9,7 @@
 - Decisions 补丁接入与异常结算规则：[OpenAI Decisions](../OPENAI_DECISIONS.md)；[开发验证记录](too-675-verification.md)。
 - 百炼 TTS 补丁：[接入与计费说明](../BAILIAN_TTS.md)、[TOO-680 验证记录](too-680-verification.md)；sqmc03 部署和镜像回执见需求卡交付评论。
 - 生图计费补丁：[TOO-674 开发验证记录](too-674-verification.md)，包含定价优先级、隔离网关对账与证据边界。
+- v0.2.21 同步候选：[TOO-703 验证记录](too-703-verification.md)、[上线与回退流程](v0.2.21-deployment.md)。
 - 保留上游前端、PostgreSQL、Redis；不开展 MySQL 迁移或前端重写。
 
 ## 机器与目录
