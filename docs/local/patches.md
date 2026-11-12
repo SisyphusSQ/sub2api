@@ -1,14 +1,16 @@
 # 补丁清单
 
-业务源码基线为 v0.2.19。自定义补丁按下表记录；开发完成与真实环境验收、稳定分支合入及部署分别记录。
+稳定源码基线为 v0.2.20。自定义补丁按下表记录；开发完成与真实环境验收、稳定分支合入及部署分别记录。
+
+`v0.2.21` 候选继续保留生图计费、Decisions 和百炼 TTS。上游新增的缓存 TTL 计费与百炼字符量共存，已对齐 Ent 和 SQL 读写；9 次真实调用和 3 次确定性 TTL HTTP E2E 的覆盖见 [TOO-703 验证记录](too-703-verification.md)。本轮没有删除补丁，也没有部署候选。三项补丁已随 v0.2.20 在 2026-11-08 部署至 sqmc03，本轮只读检查仍为该固定镜像，未重复执行生产调用。
 
 `v0.2.20` 同步与 Review 修复保留 Decisions、生图计费和百炼 TTS；上游正式版与已回迁的前端依赖锁一致，OAuth 响应修复亦已包含在上游代码中。本地后端依赖已补齐，单元、定向 race、源码静态检查与构建通过，并完成 9 次真实上游调用及账本核对；本轮不移除补丁。本地 Docker 集成、真实 OAuth / WS 与部署的覆盖边界见[版本记录](releases.md)，源码合入和远端 CI 以实际 PR 回执为准。
 
 | 需求 | 状态 | 实现与验证 | 移除条件 |
 | --- | --- | --- | --- |
 | [TOO-680 百炼 TTS](https://linear.app/sisyphus-sq/issue/TOO-680) | 本地回归与真实上游验收通过；合并及 sqmc03 部署回执见需求卡交付评论 | 原生 HTTP/SSE、双向 WS 与统一 speech，字符和 Token 分别计费；迁移 249；[接入说明](../BAILIAN_TTS.md)、[验证记录](too-680-verification.md) | 上游正式支持等价协议、计量及异常结算，并通过相同音频、流式和账本回归 |
-| [TOO-674 生图计费](https://linear.app/sisyphus-sq/issue/TOO-674) | 开发、隔离网关验证及用户评审通过；未部署 | 源码 `89b3919e6`，开发分支 `suqing/fix/image-token-billing`，基线 `84d10c31c`；PR 合并与默认分支同步回执见卡片交付评论；默认 token 选择、原生图片用量解析与模式标记修复；59 个后端测试包、最终定向 race/源码静态检查及4次真实网关调用，详见[验证记录](too-674-verification.md)；上游 `d851a3847` 尚无等价修复 | 上游正式版等价修复默认 token 选择与图片用量归类，并通过相同定价优先级及入账回归 |
-| [TOO-675 Decisions](https://linear.app/sisyphus-sq/issue/TOO-675) | 评审验收通过，已合入 `suqing/stable`，未部署 | 源码 `dcd7b43e7`；开发分支 `suqing/fix/openai-decisions`，快进集成；远端回执见卡片交付评论；两分组 12 次真实调用，缓存读写、账本/余额、并发去重及失败取消均已验收，见[接入说明](../OPENAI_DECISIONS.md)和[验证记录](too-675-verification.md)；PR #7922 仅作参考 | 上游正式支持并通过实际调用及记账回归 |
+| [TOO-674 生图计费](https://linear.app/sisyphus-sq/issue/TOO-674) | 已随 v0.2.20 合入并部署；v0.2.21 候选回归通过 | 源码 `89b3919e6`，开发分支 `suqing/fix/image-token-billing`，基线 `84d10c31c`；PR 合并与默认分支同步回执见卡片交付评论；默认 token 选择、原生图片用量解析与模式标记修复；59 个后端测试包、最终定向 race/源码静态检查及4次真实网关调用，详见[验证记录](too-674-verification.md)；上游 `d851a3847` 尚无等价修复 | 上游正式版等价修复默认 token 选择与图片用量归类，并通过相同定价优先级及入账回归 |
+| [TOO-675 Decisions](https://linear.app/sisyphus-sq/issue/TOO-675) | 已随 v0.2.20 合入并部署；v0.2.21 候选回归通过 | 源码 `dcd7b43e7`；开发分支 `suqing/fix/openai-decisions`，快进集成；远端回执见卡片交付评论；两分组 12 次真实调用，缓存读写、账本/余额、并发去重及失败取消均已验收，见[接入说明](../OPENAI_DECISIONS.md)和[验证记录](too-675-verification.md)；PR #7922 仅作参考 | 上游正式支持并通过实际调用及记账回归 |
 | 上游前端依赖安全修复 | 当前源码包含；本次未部署 | 回迁上游 `d851a3847`：`vue-i18n` / `@intlify/message-compiler` 升至 `11.4.16`，`decode-uri-component` 至 `0.5.1`；另将 `follow-redirects` 升至 `1.16.2` 以通过当前安全门禁；验证见[版本记录](releases.md) | 上游正式版包含等价修复后，核对依赖锁定、构建环境及前端回归，消除重复的本地差异 |
 | 上游 OpenAI OAuth 非流式响应修复 | 当前源码包含；本次未部署 | 回迁上游 PR #7979 的 `6b2fdfcac`、`9b5407449`、`4db8402b5`，保留客户端流式标志，处理非完成终止事件和缺失上游 Content-Type；验证见[版本记录](releases.md) | 上游正式版包含等价修复并通过 OAuth 透传及非透传回归后，核对并消除重复的本地差异 |
 

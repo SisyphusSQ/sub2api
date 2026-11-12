@@ -142,6 +142,8 @@ docs/local/*
 !docs/local/too-675-verification.md
 !docs/local/too-674-verification.md
 !docs/local/too-680-verification.md
+!docs/local/too-703-verification.md
+!docs/local/v0.2.21-deployment.md
 !docs/agent-resource-safety.md
 !docs/moego-json-batching.md
 !docs/admin-api-keys.md
@@ -150,6 +152,7 @@ docs/local/*
 !docs/PAYMENT_CN.md
 !docs/ADMIN_PAYMENT_INTEGRATION_API.md
 !docs/ASYNC_IMAGE_TASKS.md
+!docs/OPENAI_IMAGES_CODEX.md
 !docs/BATCH_IMAGE_MVP.md
 !docs/COMPOSITE_GROUPS.md
 !docs/PLUGIN_DEVELOPMENT.md
