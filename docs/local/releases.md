@@ -1,5 +1,16 @@
 # 版本记录
 
+## 2026-11-19 v0.2.23 同步候选（未合入 stable，未部署）
+
+- 从 `suqing/stable` 的 `6f9121d4a258f930e0d391249a852a0468158004` 合入上游正式标签 `v0.2.23`（`5af9afb588c4b014b3df9db7d4073af1f8ae01b6`），包含 v0.2.22 的批量扣费、分组 Ultra Fast 和 Vertex 区域能力，以及 v0.2.23 的 GPT-6.2 定价、流式处理和缓存写入 TTL 修复。
+- 保留 Decisions、生图计费、百炼 TTS 及 `249_bailian_audio_usage.sql`。计费冲突保留上游统一计费入口和本地图片 Token 定价与模式标记，内存测试沿用本地隔离进程助手。候选将上游标签内滞留的 `VERSION` 从 `0.2.22` 改为 `0.2.23`。
+- Antigravity JSON 和 SSE 的缓存写入总量按现有计费口径写入用量日志和扣费指纹。上游总量为零、缺失或 `null` 时，使用 5m 和 1h 明细回退所得的计费总量。正总量仍作为计费上限，原始响应与明细保留。
+- JSON、SSE 及迟到 SSE 明细均有回归覆盖。修复后用 Go 1.27.4 重跑全量单测，62 个包通过。
+- 隔离 PostgreSQL 对账中，JSON 与 SSE 各记 `50 = 20 + 30` 个缓存写入 token，各重放一次后共 2 条账单和 2 条去重记录，余额与 Key 配额均变动 USD 0.00049920。测试使用模拟上游。
+- 用量日志批量写入 SQL 的 `SELECT` 补齐 `audio_input_characters`。隔离 PostgreSQL 回归读回字符数 `0、17、42`，三条记录共享同一个 PostgreSQL 事务 ID。修复前相同用例通过三个单条事务写入。修复后重新执行六项定向集成，含上述 Antigravity 对账，均通过且没有单条回退记录。
+- `feb9dd80` 的隔离验证已通过 Go 1.27.4 嵌入构建、前端构建与 lint、Vitest 全量 3148 项及 PostgreSQL 定向集成 22 项。项目迁移器在 v0.2.21 等价基线上完成 303 → 306，原校验和不变，重跑无新增。分组日汇总迁移遇锁超时，释放锁后重试成功。本次修复未改变迁移文件，对账前后复核 306 条迁移历史一致。
+- PR 保持 Draft。完整 Docker/testcontainers 集成、真实供应商调用、生产快照规模和旧镜像回退仍待验证。
+
 ## 2026-11-12 v0.2.21 已部署 sqmc03（TOO-703）
 
 - [PR #8](https://github.com/SisyphusSQ/sub2api/pull/8) 已合入 `suqing/stable`，运行源码固定为 `2b5b6b67d7b05189412cfb3c8008ecd9a2b311e0`，版本 `0.2.21+sq.2b5b6b67`。在 sqmc05 交叉构建 Linux arm64 后端，复用此前完整验证的嵌入前端，在 sqmc03 按既有固定基础镜像打包。

@@ -1187,7 +1187,8 @@ func buildUsageLogBestEffortInsertQuery(preparedList []usageLogInsertPrepared) (
 			native_compaction_v2,
 			cache_creation_30m_tokens,
 			cache_creation_12h_tokens,
-			created_at
+			created_at,
+			audio_input_characters
 		FROM input
 		ON CONFLICT (request_id, api_key_id) DO NOTHING
 	`)
