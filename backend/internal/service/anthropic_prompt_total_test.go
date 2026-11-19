@@ -274,7 +274,7 @@ func TestAnthropicPromptTotalForwardBoundary(t *testing.T) {
 					require.Equal(t, 20, result.Usage.CacheCreation5mTokens)
 					require.Equal(t, 30, result.Usage.CacheCreation1hTokens)
 					result.Model = "claude-sonnet-4"
-					assertAnthropicCacheCreationResultCosts(t, result, 0.16)
+					assertAnthropicCacheCreationResultCosts(t, result, 50, 0.16)
 					if strings.Contains(route, "messages") || route == "passthrough" {
 						return
 					}
@@ -345,7 +345,7 @@ func TestAnthropicPromptTotalBufferedMessages(t *testing.T) {
 				}
 				require.NoError(t, err)
 				require.Equal(t, wantInput, usage.InputTokens)
-				assertAnthropicCacheCreationResultCosts(t, &ForwardResult{Model: "claude-sonnet-4", Usage: *usage}, 0.16)
+				assertAnthropicCacheCreationResultCosts(t, &ForwardResult{Model: "claude-sonnet-4", Usage: *usage}, 50, 0.16)
 				require.JSONEq(t, body, recorder.Body.String())
 			})
 		}

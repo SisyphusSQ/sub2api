@@ -119,7 +119,7 @@ func TestAnthropicCacheCreationSnapshots(t *testing.T) {
 				cache5m, cache1h := normalizeCacheCreationBreakdown(usage.billingUsageTokens())
 				require.Equal(t, test.billed5m, cache5m)
 				require.Equal(t, test.billed1h, cache1h)
-				assertAnthropicCacheCreationRecordCosts(t, *usage, float64(test.billed5m)*0.002+float64(test.billed1h)*0.004)
+				assertAnthropicCacheCreationRecordCosts(t, *usage, test.wantTotals[len(test.wantTotals)-1], float64(test.billed5m)*0.002+float64(test.billed1h)*0.004)
 			})
 		}
 	}
@@ -232,26 +232,26 @@ func TestAnthropicCacheCreationMissingDetailForwardBillingBoundary(t *testing.T)
 							require.EqualValues(t, test.aggregate, usage.Get("cache_creation_input_tokens").Int())
 						}
 					}
-					assertAnthropicCacheCreationResultCosts(t, result, test.cacheCost)
+					assertAnthropicCacheCreationResultCosts(t, result, test.aggregate, test.cacheCost)
 				})
 			}
 		}
 	}
 }
 
-func assertAnthropicCacheCreationRecordCosts(t *testing.T, usage ClaudeUsage, wantCacheCost float64) {
+func assertAnthropicCacheCreationRecordCosts(t *testing.T, usage ClaudeUsage, wantAggregate int, wantCacheCost float64) {
 	t.Helper()
 	usage.InputTokens = 10
 	usage.OutputTokens = 2
-	assertAnthropicCacheCreationResultCosts(t, &ForwardResult{RequestID: "cache_creation", Model: "claude-sonnet-4", Usage: usage, Duration: time.Second}, wantCacheCost)
+	assertAnthropicCacheCreationResultCosts(t, &ForwardResult{RequestID: "cache_creation", Model: "claude-sonnet-4", Usage: usage, Duration: time.Second}, wantAggregate, wantCacheCost)
 }
 
-func assertAnthropicCacheCreationResultCosts(t *testing.T, result *ForwardResult, wantCacheCost float64) {
+func assertAnthropicCacheCreationResultCosts(t *testing.T, result *ForwardResult, wantAggregate int, wantCacheCost float64) {
 	t.Helper()
-	assertAnthropicCacheCreationOverrideCosts(t, result, wantCacheCost, &Account{ID: 701, Platform: PlatformAnthropic}, nil, false)
+	assertAnthropicCacheCreationOverrideCosts(t, result, wantAggregate, wantCacheCost, &Account{ID: 701, Platform: PlatformAnthropic}, nil, false)
 }
 
-func assertAnthropicCacheCreationOverrideCosts(t *testing.T, result *ForwardResult, wantCacheCost float64, account *Account, settings *SettingService, wantOverridden bool) {
+func assertAnthropicCacheCreationOverrideCosts(t *testing.T, result *ForwardResult, wantAggregate int, wantCacheCost float64, account *Account, settings *SettingService, wantOverridden bool) {
 	t.Helper()
 	for _, customStats := range []bool{false, true} {
 		usageRepo := &openAIRecordUsageLogRepoStub{inserted: true}
@@ -288,7 +288,7 @@ func assertAnthropicCacheCreationOverrideCosts(t *testing.T, result *ForwardResu
 		}))
 		require.NotNil(t, usageRepo.lastLog)
 		require.Equal(t, wantOverridden, usageRepo.lastLog.CacheTTLOverridden)
-		require.Equal(t, result.Usage.CacheCreationInputTokens, usageRepo.lastLog.CacheCreationTokens)
+		require.Equal(t, wantAggregate, usageRepo.lastLog.CacheCreationTokens)
 		require.Equal(t, result.Usage.CacheCreation5mTokens, usageRepo.lastLog.CacheCreation5mTokens)
 		require.Equal(t, result.Usage.CacheCreation1hTokens, usageRepo.lastLog.CacheCreation1hTokens)
 		require.InDelta(t, wantCacheCost, usageRepo.lastLog.CacheCreationCost, 1e-12)
@@ -297,6 +297,7 @@ func assertAnthropicCacheCreationOverrideCosts(t *testing.T, result *ForwardResu
 		require.InDelta(t, wantTotalCost, usageRepo.lastLog.TotalCost, 1e-12)
 		require.InDelta(t, wantTotalCost*0.5, usageRepo.lastLog.ActualCost, 1e-12)
 		require.Equal(t, 1, billingRepo.calls)
+		require.Equal(t, wantAggregate, billingRepo.lastCmd.CacheCreationTokens)
 		require.InDelta(t, wantTotalCost*0.5, billingRepo.lastCmd.BalanceCost, 1e-12)
 		require.NotNil(t, usageRepo.lastLog.AccountStatsCost)
 		require.InDelta(t, wantTotalCost*statsMultiplier, *usageRepo.lastLog.AccountStatsCost, 1e-12)
@@ -376,7 +377,7 @@ func assertAnthropicCacheCreationForwardBoundary(t *testing.T, antigravity bool)
 				require.Equal(t, test.present, result.Usage.cacheCreationInputTokensPresent)
 				require.Equal(t, test.cache5m, result.Usage.CacheCreation5mTokens)
 				require.Equal(t, test.cache1h, result.Usage.CacheCreation1hTokens)
-				assertAnthropicCacheCreationResultCosts(t, result, test.cacheCost)
+				assertAnthropicCacheCreationResultCosts(t, result, test.aggregate, test.cacheCost)
 			})
 		}
 	}
@@ -435,7 +436,7 @@ func TestAnthropicCacheCreationMarshaledSSEBoundary(t *testing.T) {
 				require.NotNil(t, completed.Response.Usage)
 				require.Equal(t, 10+test.wantAggregate, completed.Response.Usage.InputTokens)
 				require.Equal(t, test.wantAggregate, completed.Response.Usage.CacheCreationInputTokens)
-				assertAnthropicCacheCreationRecordCosts(t, result.Usage, test.wantCacheCost)
+				assertAnthropicCacheCreationRecordCosts(t, result.Usage, test.wantAggregate, test.wantCacheCost)
 			})
 		}
 	}
@@ -446,7 +447,7 @@ func TestRawAnthropicCacheCreationExplicitZero(t *testing.T) {
 		usage := parseClaudeUsageFromResponseBody([]byte(`{"usage":{"input_tokens":10,"cache_creation_input_tokens":0,"cache_creation":{"ephemeral_1h_input_tokens":200}` + prompt + `}}`))
 		require.Equal(t, 200, usage.CacheCreationInputTokens)
 		require.Equal(t, 200, usage.CacheCreation1hTokens)
-		assertAnthropicCacheCreationRecordCosts(t, *usage, 0.8)
+		assertAnthropicCacheCreationRecordCosts(t, *usage, 200, 0.8)
 		if prompt != "" {
 			require.Equal(t, 300, usage.InputTokens)
 		} else {
@@ -484,24 +485,25 @@ func TestAnthropicCacheCreationNullBodyParity(t *testing.T) {
 			require.Equal(t, typed, generic)
 			require.Equal(t, test.want, raw.CacheCreationInputTokens)
 			require.Equal(t, test.present, raw.cacheCreationInputTokensPresent)
-			assertAnthropicCacheCreationRecordCosts(t, *raw, test.wantCost)
+			assertAnthropicCacheCreationRecordCosts(t, *raw, test.want, test.wantCost)
 		})
 	}
 }
 
 func TestAntigravityCacheCreationUsage(t *testing.T) {
 	for _, test := range []struct {
-		name      string
-		payload   string
-		aggregate int
-		present   bool
-		wantCost  float64
+		name       string
+		payload    string
+		aggregate  int
+		wantBilled int
+		present    bool
+		wantCost   float64
 	}{
-		{"explicit zero with TTL", `{"cache_creation_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":50,"ephemeral_1h_input_tokens":200}}`, 0, true, 0.9},
-		{"missing aggregate keeps TTL fallback", `{"cache_creation":{"ephemeral_5m_input_tokens":50,"ephemeral_1h_input_tokens":200}}`, 0, false, 0.9},
-		{"null aggregate keeps TTL fallback", `{"cache_creation_input_tokens":null,"cache_creation":{"ephemeral_5m_input_tokens":50,"ephemeral_1h_input_tokens":200}}`, 0, false, 0.9},
-		{"positive aggregate", `{"cache_creation_input_tokens":100,"cache_creation":{"ephemeral_1h_input_tokens":200}}`, 100, true, 0.4},
-		{"all null", `{"cache_creation_input_tokens":null,"cache_creation":{"ephemeral_5m_input_tokens":null,"ephemeral_1h_input_tokens":null}}`, 0, false, 0},
+		{"explicit zero with TTL", `{"cache_creation_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":50,"ephemeral_1h_input_tokens":200}}`, 0, 250, true, 0.9},
+		{"missing aggregate keeps TTL fallback", `{"cache_creation":{"ephemeral_5m_input_tokens":50,"ephemeral_1h_input_tokens":200}}`, 0, 250, false, 0.9},
+		{"null aggregate keeps TTL fallback", `{"cache_creation_input_tokens":null,"cache_creation":{"ephemeral_5m_input_tokens":50,"ephemeral_1h_input_tokens":200}}`, 0, 250, false, 0.9},
+		{"positive aggregate", `{"cache_creation_input_tokens":100,"cache_creation":{"ephemeral_1h_input_tokens":200}}`, 100, 100, true, 0.4},
+		{"all null", `{"cache_creation_input_tokens":null,"cache_creation":{"ephemeral_5m_input_tokens":null,"ephemeral_1h_input_tokens":null}}`, 0, 0, false, 0},
 	} {
 		for _, parser := range []string{"body", "stream"} {
 			t.Run(test.name+"/"+parser, func(t *testing.T) {
@@ -516,7 +518,7 @@ func TestAntigravityCacheCreationUsage(t *testing.T) {
 				require.Equal(t, test.present, usage.cacheCreationInputTokensPresent)
 				require.Equal(t, int(gjson.Get(test.payload, "cache_creation.ephemeral_5m_input_tokens").Int()), usage.CacheCreation5mTokens)
 				require.Equal(t, int(gjson.Get(test.payload, "cache_creation.ephemeral_1h_input_tokens").Int()), usage.CacheCreation1hTokens)
-				assertAnthropicCacheCreationRecordCosts(t, *usage, test.wantCost)
+				assertAnthropicCacheCreationRecordCosts(t, *usage, test.wantBilled, test.wantCost)
 			})
 		}
 	}
@@ -524,16 +526,17 @@ func TestAntigravityCacheCreationUsage(t *testing.T) {
 
 func TestAntigravityCacheCreationLateDeltas(t *testing.T) {
 	for _, test := range []struct {
-		name      string
-		aggregate string
-		wantTotal int
-		present   bool
-		wantCost  float64
+		name       string
+		aggregate  string
+		wantTotal  int
+		wantBilled int
+		present    bool
+		wantCost   float64
 	}{
-		{"explicit zero falls back", `"cache_creation_input_tokens":0,`, 0, true, 1.3},
-		{"missing aggregate keeps TTL fallback", "", 0, false, 1.3},
-		{"null aggregate keeps TTL fallback", `"cache_creation_input_tokens":null,`, 0, false, 1.3},
-		{"positive aggregate survives", `"cache_creation_input_tokens":100,`, 100, true, 0.372},
+		{"explicit zero falls back", `"cache_creation_input_tokens":0,`, 0, 350, true, 1.3},
+		{"missing aggregate keeps TTL fallback", "", 0, 350, false, 1.3},
+		{"null aggregate keeps TTL fallback", `"cache_creation_input_tokens":null,`, 0, 350, false, 1.3},
+		{"positive aggregate survives", `"cache_creation_input_tokens":100,`, 100, 100, true, 0.372},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			service := &AntigravityGatewayService{}
@@ -550,7 +553,7 @@ func TestAntigravityCacheCreationLateDeltas(t *testing.T) {
 			}
 			require.Equal(t, 50, usage.CacheCreation5mTokens)
 			require.Equal(t, 300, usage.CacheCreation1hTokens)
-			assertAnthropicCacheCreationRecordCosts(t, *usage, test.wantCost)
+			assertAnthropicCacheCreationRecordCosts(t, *usage, test.wantBilled, test.wantCost)
 		})
 	}
 
@@ -568,20 +571,21 @@ func TestAntigravityCacheCreationLateDeltas(t *testing.T) {
 		require.True(t, usage.cacheCreationInputTokensPresent)
 		require.Equal(t, 50, usage.CacheCreation5mTokens)
 		require.Equal(t, 200, usage.CacheCreation1hTokens)
-		assertAnthropicCacheCreationRecordCosts(t, *usage, 0.36)
+		assertAnthropicCacheCreationRecordCosts(t, *usage, 100, 0.36)
 	})
 }
 
 func TestAntigravityRawCacheUsageStreamingLifecycle(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	for _, test := range []struct {
-		name      string
-		aggregate string
-		wantTotal int
-		wantCost  float64
+		name       string
+		aggregate  string
+		wantTotal  int
+		wantBilled int
+		wantCost   float64
 	}{
-		{"zero aggregate keeps TTL billing fallback", "0", 0, 1.3},
-		{"positive aggregate survives zero placeholders", "100", 100, 0.372},
+		{"zero aggregate keeps TTL billing fallback", "0", 0, 350, 1.3},
+		{"positive aggregate survives zero placeholders", "100", 100, 100, 0.372},
 	} {
 		for _, terminal := range []string{"message_stop", "eof"} {
 			t.Run(test.name+"/"+terminal, func(t *testing.T) {
@@ -621,7 +625,7 @@ func TestAntigravityRawCacheUsageStreamingLifecycle(t *testing.T) {
 				require.True(t, result.Usage.cacheCreationInputTokensPresent)
 				require.Equal(t, 50, result.Usage.CacheCreation5mTokens)
 				require.Equal(t, 300, result.Usage.CacheCreation1hTokens)
-				assertAnthropicCacheCreationResultCosts(t, result, test.wantCost)
+				assertAnthropicCacheCreationResultCosts(t, result, test.wantBilled, test.wantCost)
 			})
 		}
 	}

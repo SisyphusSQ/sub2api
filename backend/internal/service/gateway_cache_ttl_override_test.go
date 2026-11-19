@@ -228,7 +228,7 @@ func TestCacheTTLOverrideForwardBillingBoundary(t *testing.T) {
 					}
 					result.Model = "claude-sonnet-4"
 					result.UpstreamModel = "claude-sonnet-4"
-					assertAnthropicCacheCreationOverrideCosts(t, result, wantCost, account, settings, target != "" && test.aggregate > 0)
+					assertAnthropicCacheCreationOverrideCosts(t, result, test.aggregate, wantCost, account, settings, target != "" && test.aggregate > 0)
 					require.Equal(t, test.aggregate, result.Usage.CacheCreationInputTokens)
 					require.Equal(t, want5m, result.Usage.CacheCreation5mTokens)
 					require.Equal(t, want1h, result.Usage.CacheCreation1hTokens)
