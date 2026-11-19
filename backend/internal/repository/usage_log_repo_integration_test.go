@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 
 	dbent "github.com/Wei-Shaw/sub2api/ent"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/pagination"
@@ -241,6 +242,50 @@ func TestUsageLogRepositoryFlushCreateBatch_DeduplicatesSameKeyInMemory(t *testi
 	var count int
 	require.NoError(t, integrationDB.QueryRowContext(ctx, "SELECT COUNT(*) FROM usage_logs WHERE request_id = $1 AND api_key_id = $2", requestID, apiKey.ID).Scan(&count))
 	require.Equal(t, 1, count)
+}
+
+func TestUsageLogRepositoryFlushBestEffortBatch_PersistsAudioCharactersInOneTransaction(t *testing.T) {
+	ctx := context.Background()
+	client := testEntClient(t)
+	repo := newUsageLogRepositoryWithSQL(client, integrationDB)
+
+	suffix := uuid.NewString()
+	user := mustCreateUser(t, client, &service.User{Email: "usage-best-effort-audio-" + suffix + "@example.com"})
+	apiKey := mustCreateApiKey(t, client, &service.APIKey{UserID: user.ID, Key: "sk-usage-best-effort-audio-" + suffix})
+	account := mustCreateAccount(t, client, &service.Account{Name: "acc-usage-best-effort-audio-" + suffix})
+
+	var batch []usageLogBestEffortRequest
+	for _, characters := range []int{0, 17, 42} {
+		log := &service.UsageLog{
+			UserID:               user.ID,
+			APIKeyID:             apiKey.ID,
+			AccountID:            account.ID,
+			RequestID:            uuid.NewString(),
+			Model:                "qwen-audio-3.1-tts-plus",
+			AudioInputCharacters: characters,
+		}
+		batch = append(batch, usageLogBestEffortRequest{
+			prepared: prepareUsageLogInsert(log),
+			apiKeyID: apiKey.ID,
+			resultCh: make(chan error, 1),
+		})
+	}
+
+	repo.flushBestEffortBatch(integrationDB, batch)
+	for _, req := range batch {
+		require.NoError(t, <-req.resultCh)
+	}
+
+	var characters pq.Int64Array
+	var transactionCount int
+	require.NoError(t, integrationDB.QueryRowContext(ctx, `
+		SELECT array_agg(audio_input_characters ORDER BY audio_input_characters), count(DISTINCT xmin::text)
+		FROM usage_logs WHERE api_key_id = $1
+	`, apiKey.ID).Scan(&characters, &transactionCount))
+	require.Equal(t, pq.Int64Array{0, 17, 42}, characters)
+	// The fallback runs one autocommit INSERT per row, producing distinct xmin values.
+	require.Equal(t, 1, transactionCount, "all usage rows must come from the same batch insert")
+	t.Logf("inserted %d usage rows in %d transaction with audio characters %v", len(characters), transactionCount, characters)
 }
 
 func TestUsageLogRepositoryCreateBestEffort_BatchPathDuplicateRequestID(t *testing.T) {
