@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/pkg/bailiantts"
+	"github.com/Wei-Shaw/sub2api/internal/pkg/requestmodel"
 	"github.com/Wei-Shaw/sub2api/internal/server/middleware"
 	"github.com/Wei-Shaw/sub2api/internal/service"
 	ws "github.com/coder/websocket"
@@ -61,6 +62,10 @@ func (h *OpenAIGatewayHandler) BailianRealtime(c *gin.Context) {
 		cancel()
 		if readErr != nil || kind != ws.MessageText || gjson.GetBytes(body, "header.action").String() != "run-task" {
 			fail(400, "invalid_request_error", "First event must be run-task")
+			return
+		}
+		if _, conflict := requestmodel.ConflictingField("application/json", body); conflict {
+			fail(400, "invalid_request_error", "Speech event declares a field more than once")
 			return
 		}
 		var event map[string]any
