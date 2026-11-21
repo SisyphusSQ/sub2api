@@ -10,6 +10,7 @@
 - 百炼 TTS 补丁：[接入与计费说明](../BAILIAN_TTS.md)、[TOO-680 验证记录](too-680-verification.md)；sqmc03 部署和镜像回执见需求卡交付评论。
 - 生图计费补丁：[TOO-674 开发验证记录](too-674-verification.md)，包含定价优先级、隔离网关对账与证据边界。
 - v0.2.21 已部署 sqmc03；实际产物与回退材料见 [版本记录](releases.md)，候选验证和复用步骤：[TOO-703 验证记录](too-703-verification.md)、[上线与回退流程](v0.2.21-deployment.md)。
+- v0.2.23 的 2026-11-19 部署回执保存在 sqmc05 的 `/Users/suqing/.local/share/sub2api/checks/v0.2.23-release-20261119-555bcb14/deployment-receipt.json`；历史回执不代表当前运行状态。
 - 保留上游前端、PostgreSQL、Redis；不开展 MySQL 迁移或前端重写。
 
 ## 机器与目录
@@ -38,6 +39,7 @@ SUB2API_ENV_FILE=/Users/suqing/.config/sub2api/deploy.env /Users/suqing/Coding/g
 ## 同步流程
 
 sqmc05 的 Codex 任务 `sub2api-09-00` 已启用，按 Asia/Shanghai 每日 09:00 检查正式 Release；每轮向 Codex 与钉钉分别报告实际结果。2026-10-30 已完成独立工作树和隔离环境演练；Docker/testcontainers 集成测试及真实付费上游调用未在该演练中运行。任务启用和演练不代表需求卡中的所有工作已完成。
+2026-11-21 的 v0.2.24 同步再次核对了控制克隆、共享锁和版本工作树，复用私有前端 store 与 Go 构建缓存；历史演练及未完成事项仍按原记录区分。
 拉取并阅读变更/迁移 → 建立或复用候选分支 → 合入正式标签 → 检查每个补丁 → 隔离构建与验证 → 推送候选及报告 → 用户确认后推进 stable → 单独决定部署。
 控制克隆或目标候选工作树脏、分支分歧、无法明确处理的冲突或验证阻塞时保留现场，不自动覆盖、stash 或提交人工工作；任务持有共享锁，stable 只跟踪自有远端的已合入提交。相同版本相同失败且无条件变化时不重复执行；当日无更新也报告检查结果。
 候选环境使用独立配置、端口、数据库和 Redis，不连接运行数据库。定时任务不进行真实付费上游调用；另行授权的验收应单独记录。报告写明实际验证与未覆盖内容，不能将构建成功当成功能验收。

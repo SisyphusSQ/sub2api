@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/pkg/bailiantts"
+	"github.com/Wei-Shaw/sub2api/internal/pkg/requestmodel"
 	openaiwsv2 "github.com/Wei-Shaw/sub2api/internal/service/openai_ws_v2"
 	ws "github.com/coder/websocket"
 	"github.com/gin-gonic/gin"
@@ -153,6 +154,9 @@ func (s *OpenAIGatewayService) ProxyBailianTTS(ctx context.Context, c *gin.Conte
 	send := func(body []byte) error {
 		if !gjson.ValidBytes(body) {
 			return errors.New("realtime input must be a JSON event")
+		}
+		if _, conflict := requestmodel.ConflictingField("application/json", body); conflict {
+			return errors.New("speech event declares a field more than once")
 		}
 		var canonical map[string]any
 		if err := json.Unmarshal(body, &canonical); err != nil || canonical == nil {
