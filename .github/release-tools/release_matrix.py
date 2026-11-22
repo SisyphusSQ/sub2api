@@ -57,9 +57,10 @@ def plan(args):
         tag = 'v' + version
     else:
         tag = args.ref
-        version = tag.removeprefix('v')
-        if not tag.startswith('v') or not VERSION_RE.fullmatch(version):
-            raise ValueError('publishing requires a v-prefixed release version tag')
+        version_tag = tag.removeprefix('sq/')
+        version = version_tag.removeprefix('v')
+        if not version_tag.startswith('v') or not VERSION_RE.fullmatch(version):
+            raise ValueError('publishing requires a v-prefixed or sq/v-prefixed release version tag')
         tagged_sha = subprocess.check_output(['git', 'rev-parse', '--verify', f'refs/tags/{tag}^{{commit}}'], text=True).strip()
         if sha != tagged_sha:
             raise ValueError('checkout does not match the selected release tag')

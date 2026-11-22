@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*'
+      - 'sq/v*'
   workflow_dispatch:
     inputs:
       tag:
@@ -54,7 +55,7 @@ jobs:
       - name: Checkout selected application source
         uses: actions/checkout@v6
         with:
-          ref: ${{ inputs.tag || github.ref }}
+          ref: ${{ inputs.tag && (inputs.dry_run && inputs.tag || format('refs/tags/{0}', inputs.tag)) || github.ref }}
           fetch-depth: 0
       - uses: actions/setup-python@v6
         with:
@@ -112,6 +113,7 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
     env:
+      GORELEASER_CURRENT_TAG: v${{ needs.prepare.outputs.version }}
       RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
       RELEASE_DATE: ${{ needs.prepare.outputs.date }}
     steps:
@@ -267,19 +269,37 @@ jobs:
           args=(publish --output "$RUNNER_TEMP/goreleaser.publisher.yaml")
           if [[ "$SIMPLE_RELEASE" == true ]]; then args+=(--simple); fi
           python "$RUNNER_TEMP/release-tools/release_matrix.py" config "${args[@]}"
-      - name: Publish existing archives and release notes
+      - name: Package release archives and publish standard tags
         uses: goreleaser/goreleaser-action@v7
         with:
           version: '~> v2'
-          args: release --clean --skip=validate,before,docker ${{ env.DRY_RUN == 'true' && '--snapshot --skip=publish,announce' || '' }} --config=${{ runner.temp }}/goreleaser.publisher.yaml
+          args: release --clean --skip=validate,before,docker ${{ (env.DRY_RUN == 'true' || startsWith(env.RELEASE_TAG, 'sq/')) && '--snapshot --skip=publish,announce' || '' }} --config=${{ runner.temp }}/goreleaser.publisher.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GORELEASER_CURRENT_TAG: ${{ needs.prepare.outputs.tag }}
+          GORELEASER_CURRENT_TAG: v${{ needs.prepare.outputs.version }}
           TAG_MESSAGE: ${{ steps.tag_message.outputs.message }}
           GITHUB_REPO_OWNER: ${{ github.repository_owner }}
           GITHUB_REPO_NAME: ${{ github.event.repository.name }}
           GITHUB_REPO_OWNER_LOWER: ${{ needs.prepare.outputs.owner_lower }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME || 'skip' }}
+      - name: Publish namespaced GitHub Release
+        if: ${{ env.DRY_RUN != 'true' && startsWith(env.RELEASE_TAG, 'sq/') }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_MESSAGE: ${{ steps.tag_message.outputs.message }}
+          RELEASE_OWNER: ${{ needs.prepare.outputs.owner_lower }}
+        run: |
+          notes="$RUNNER_TEMP/release-notes.md"
+          printf '%s\n\n容器镜像：`ghcr.io/%s/sub2api:%s`\n' \
+            "$TAG_MESSAGE" "$RELEASE_OWNER" "$RELEASE_VERSION" > "$notes"
+
+          args=(--repo "$GITHUB_REPOSITORY" --verify-tag --title "Sub2API $RELEASE_VERSION" --notes-file "$notes")
+          if [[ "$RELEASE_VERSION" == *-* ]]; then args+=(--prerelease); fi
+          assets=()
+          if [[ "$SIMPLE_RELEASE" != true ]]; then
+            assets=(dist/checksums.txt release-input/sub2api_*.tar.gz release-input/sub2api_*.zip)
+          fi
+          gh release create "$RELEASE_TAG" "${assets[@]}" "${args[@]}"
       - name: Upload dry-run checksums and metadata
         if: ${{ env.DRY_RUN == 'true' }}
         uses: actions/upload-artifact@v7
@@ -322,7 +342,7 @@ jobs:
           fi
 
           TAG_NAME="$RELEASE_TAG"
-          VERSION=${TAG_NAME#v}
+          VERSION=$RELEASE_VERSION
           REPO="${{ github.repository }}"
           GHCR_IMAGE="ghcr.io/${REPO,,}"  # ${,,} converts to lowercase
 
