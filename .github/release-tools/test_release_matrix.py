@@ -139,6 +139,17 @@ class ReleaseMatrixTest(unittest.TestCase):
         self.assertEqual(output['owner_lower'], 'exampleowner')
         self.assertEqual(len(json.loads(output['matrix'])['include']), 5)
 
+    def test_publication_resolves_namespaced_tag_without_changing_release_version(self):
+        tag = 'sq/v1.2.3'
+        sha = 'a' * 40
+        with patch.dict(os.environ, {'GITHUB_OUTPUT': 'outputs'}), patch.object(subprocess, 'check_output', return_value=sha) as git:
+            release.plan(argparse.Namespace(ref=tag, dry_run=False, simple=False))
+        git.assert_called_with(['git', 'rev-parse', '--verify', f'refs/tags/{tag}^{{commit}}'], text=True)
+        output = dict(line.split('=', 1) for line in Path('outputs').read_text().splitlines())
+        self.assertEqual(output['tag'], tag)
+        self.assertEqual(output['version'], '1.2.3')
+        self.assertEqual(release.VERSION_FILE.read_text(), '1.2.3\n')
+
     def test_docker_commands_do_not_publish_during_dry_run(self):
         fake_bin = Path('bin')
         fake_bin.mkdir()
