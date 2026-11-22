@@ -121,6 +121,28 @@ func TestBailianWebSocketPreservesBinaryAndBillsReusedClientIDsSeparately(t *tes
 		}
 	}
 	require.NotEqual(t, ids[0], ids[1], "reused client task IDs must not suppress billing for a new synthesis")
+	t.Run("rejects_duplicate_event_fields", func(t *testing.T) {
+		client, _, err := ws.Dial(ctx, "ws"+strings.TrimPrefix(downstream.URL, "http")+bailiantts.InferencePath, nil)
+		require.NoError(t, err)
+		defer func() { _ = client.CloseNow() }()
+		for range 3 {
+			_, _, err = client.Read(ctx)
+			require.NoError(t, err)
+		}
+		select {
+		case <-recorded:
+		case <-ctx.Done():
+			t.Fatal("missing settlement")
+		}
+		err = client.Write(ctx, ws.MessageText, []byte(`{"header":{"action":"continue-task","task_id":"reused"},"payload":{"input":{"text":"one","text":"two"}}}`))
+		require.NoError(t, err)
+		select {
+		case err := <-finished:
+			require.ErrorContains(t, err, "field more than once")
+		case <-ctx.Done():
+			t.Fatal("relay did not reject the duplicate field")
+		}
+	})
 	t.Run("redacts_upstream_task_error", func(t *testing.T) {
 		account.Credentials["workspace_id"] = "fixture-redaction"
 		client, _, err := ws.Dial(ctx, "ws"+strings.TrimPrefix(downstream.URL, "http")+bailiantts.InferencePath, nil)
