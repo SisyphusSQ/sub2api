@@ -1,8 +1,10 @@
 # 补丁清单
 
-稳定源码基线为 v0.2.23（[PR #10](https://github.com/SisyphusSQ/sub2api/pull/10)，提交 `555bcb140`）。自定义补丁按下表记录；候选验证、稳定分支合入及部署分别记录。
+稳定源码基线为 v0.2.24（[PR #11](https://github.com/SisyphusSQ/sub2api/pull/11)，当前 stable 提交 `52c6caffa`）。自定义补丁按下表记录；候选验证、稳定分支合入及部署分别记录。
 
-`v0.2.24` 同步候选保留 Decisions、生图计费和百炼 TTS 本地补丁，并使本地路由和百炼 WebSocket 帧接入上游重复字段拒绝规则；路由、处理器和百炼定向回归已通过，覆盖范围和未运行项见[版本记录](releases.md)。本候选未合入 stable、未部署。
+`v0.2.25` 同步候选保留 Decisions、生图计费和百炼 TTS 本地补丁，未移除已有实现。Decisions 已按上游新签名传入请求上下文并补充身份变量回归，因 Go 依赖缺失尚未运行该回归。上游新增请求头身份变量，配置后可向上游发送用户 ID、API Key ID、分组 ID 及请求 ID；应按实际需要审查上报配置。本候选未合入 stable、未部署，验证缺口见[版本记录](releases.md)。
+
+`v0.2.24` 同步保留 Decisions、生图计费和百炼 TTS 本地补丁，并使本地路由和百炼 WebSocket 帧接入上游重复字段拒绝规则；候选阶段路由、处理器和百炼定向回归已通过，后续通过 PR #11 合入 stable，覆盖范围和未运行项见[版本记录](releases.md)。
 
 `v0.2.23` 同步候选保留 Decisions、生图计费和百炼 TTS 本地补丁。上游改用统一计费入口，候选保留默认图片 Token 定价选择和无 Resolver 时的 Token 模式标记；后续计费回归、稳定版接受及历史部署回执见[版本记录](releases.md)。
 
