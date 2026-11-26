@@ -128,7 +128,7 @@ func (s *OpenAIGatewayService) ForwardDecisions(ctx context.Context, c *gin.Cont
 			}
 		}
 	}
-	credentialAccount.ApplyHeaderOverrides(upstreamRequest.Header)
+	credentialAccount.ApplyHeaderOverrides(upstreamRequest.Context(), upstreamRequest.Header)
 	// 凭据只从选中的原生账号获取，客户端请求头和账号通用覆写不能替代它。
 	upstreamRequest.Header.Set("Authorization", "Bearer "+key)
 	proxyURL := ""

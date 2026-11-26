@@ -25,14 +25,18 @@ func TestForwardDecisionsNativeProtocolAndUsage(t *testing.T) {
 	c, _ := gin.CreateTestContext(recorder)
 	c.Request = httptest.NewRequest(http.MethodPost, "/v1/decisions", strings.NewReader(decisionsRequestFixture))
 	c.Request.Header.Set("Authorization", "Bearer downstream-secret")
+	c.Request = c.Request.WithContext(WithHeaderOverrideRequestScope(c.Request.Context(), 7, 31, nil))
 	upstream := &httpUpstreamRecorder{resp: &http.Response{StatusCode: 200, Header: http.Header{"X-Request-Id": {"dec-123"}}, Body: io.NopCloser(strings.NewReader(decisionsResponseFixture))}}
 	svc := &OpenAIGatewayService{cfg: &config.Config{}, httpUpstream: upstream, billingService: NewBillingService(&config.Config{}, nil)}
 	account := &Account{ID: 7, Platform: PlatformOpenAI, Type: AccountTypeAPIKey, Credentials: map[string]any{"api_key": "upstream-secret", "base_url": "https://api.openai.com/v1"}}
+	account.Credentials[credKeyHeaderOverrideEnabled] = true
+	account.Credentials[credKeyHeaderOverrides] = map[string]any{"x-end-user": "{{user_id}}"}
 	result, err := svc.ForwardDecisions(c.Request.Context(), c, account, []byte(decisionsRequestFixture), ChannelMappingResult{}, &APIKey{})
 	require.NoError(t, err)
 	require.JSONEq(t, decisionsResponseFixture, recorder.Body.String())
 	require.Equal(t, "https://api.openai.com/v1/decisions", upstream.lastReq.URL.String())
 	require.Equal(t, "Bearer upstream-secret", upstream.lastReq.Header.Get("Authorization"))
+	require.Equal(t, []string{"7"}, upstream.lastReq.Header["x-end-user"])
 	require.Equal(t, []byte(decisionsRequestFixture), upstream.lastBody)
 	require.Equal(t, "dec-123", result.RequestID)
 	require.Equal(t, 1000, result.Usage.InputTokens)
