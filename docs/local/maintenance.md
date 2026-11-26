@@ -48,7 +48,9 @@ sqmc05 的 Codex 任务 `sub2api-09-00` 已启用，按 Asia/Shanghai 每日 09:
 
 ## 发布与回退
 
-GitHub Release 使用指向 `suqing/stable` 上已确认提交的附注标签 `sq/v<版本>`。将发布说明放在标签正文中，推送至 `origin` 后由 Release 工作流发布 GitHub 附件及 GHCR 镜像。需手动触发时，在 `suqing/stable` 运行 Release，并在 `tag` 输入完整标签名。镜像和二进制版本使用 `sq/v` 后的版本号。
+GitHub Release 使用指向 `suqing/stable` 上已确认提交的附注标签 `sq/v<版本>`，发布说明放在标签正文中。GitHub Actions 按用户要求保持关闭，推送标签不会自动发布；当前沿用 v0.2.24 的本地 GoReleaser 打包及 GitHub 附件上传方式，发布五个平台压缩包和 `checksums.txt`，回读远端附件并核对 SHA-256。GHCR 镜像单独记录实际发布结果，不将 GitHub Release 发布成功视为镜像已发布。
+
+仓库仍保留 Release 工作流；仅在另行授权启用 Actions 后，才可通过标签推送或在 `suqing/stable` 手动运行 Release（`tag` 输入完整标签名）发布附件和镜像。镜像和二进制版本使用 `sq/v` 后的版本号。
 
 部署单独授权，使用固定自有版本镜像并记录源码提交、上游版本和镜像摘要。先分析数据库迁移并备份；不兼容迁移或新增写入不能只靠旧镜像回退。
 提交、推送、打标签收尾复用已有测试输出，不重复运行测试；此约定不证明测试已通过。
